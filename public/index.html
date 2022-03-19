@@ -9,6 +9,21 @@
       name="description"
       content="Web site created using create-react-app"
     />
+    <!-- PrimeReact -->
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css" />
+    <link rel="stylesheet" href="https://unpkg.com/primereact/resources/themes/lara-light-indigo/theme.css" />
+    <link rel="stylesheet" href="https://unpkg.com/primereact/resources/primereact.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@2.0.0/primeflex.min.css" />
+
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/react/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react-transition-group@4.4.2/dist/react-transition-group.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css">
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/themes/saga-blue.css">
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/themes/arya-blue.css">
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/themes/vela-blue.css">
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -40,4 +55,21 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <style>
+  html, body {
+      width: 100%;
+      height: 100%;
+  }
+
+  #root {
+    min-height: 100vh;
+    background: rgb(60,78,108);
+    background: repeating-linear-gradient(0deg, rgba(60,78,108,1) 0%, rgba(76,109,185,1) 48%, rgba(89,196,238,1) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  </style>
 </html>

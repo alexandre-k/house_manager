@@ -22,5 +22,11 @@
   },
   "include": [
     "src"
-  ]
+  ],
+  "baseUrl": ".",
+  "paths": {
+    "@*": ["./node_modules/*"],
+    "@components": ["./src/components"],
+    "stream": ["./node_modules/readable-stream"]
+  }
 }
