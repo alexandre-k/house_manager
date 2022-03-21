@@ -195,7 +195,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             amount: price,
             userId: 0,
             receiptImageId: receiptImageId as number,
-            dbType: 'indexedDB',
+            dbType: 'indexedDB'
         });
         // gun.get('receipts').get('2022-03').get('1235').put({ cid: '1235', name: 'test 3', amount: '309'})
         // gun.get('receipts').get('2022-03').get('456').put({ cid: '124', name: 'test2', amount: '123'})

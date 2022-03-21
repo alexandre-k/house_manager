@@ -15,6 +15,7 @@ export interface User {
     username: string;
     pubKey: string;
     dbType: string;
+    network: string;
 }
 
 export interface ReceiptImage {

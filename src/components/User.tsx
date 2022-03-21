@@ -14,23 +14,31 @@ import { Password } from 'primereact/password';
 import { ProgressBar } from 'primereact/progressbar';
 import { db } from '../context/db';
 // import ECIES from 'bitcore-ecies';
-// const bitcoin = require('bitcoinjs-lib');
-// import bip39 from 'bip39';
-// import bip32 from 'bip32';
+const bitcoin = require('bitcoinjs-lib');
+// const bip39 = require('bip39');
+import * as bip39 from 'bip39';
+// const bip32 = require('bip32');
+import BIP32Factory from 'bip32';
+// import * as ecc from 'tiny-secp256k1';
+// const bip32Utils = require('bip32-utils');
 // console.log(Bitcoin)
 // console.log('BITCOIN ', bitcoin.ECKey.makeRandom())
-// console.log('bip39 ', bip39)
-import crypto from 'crypto';
-import * as secp256k1 from '@transmute/did-key-secp256k1';
-
-console.log('secp256k1 ', secp256k1)
+// var Accounts = require('web3-eth-accounts');
+import Web3 from 'web3';
+console.log('web3 ', Web3)
+/* import crypto from 'crypto';
+ * import * as secp256k1 from '@transmute/did-key-secp256k1';
+ * 
+ * console.log('secp256k1 ', secp256k1)
+ * 
+ *  */
 
 
 type IUserProps = {
-    isLoggedIn: boolean,
-    setIsLoggedIn: (isLoggedIn: boolean) => void
-    showConnectDialog: boolean
-    setShowConnectDialog: (showConnectDialog: boolean) => void
+    isLoggedIn: boolean;
+    setIsLoggedIn: (isLoggedIn: boolean) => void;
+    showConnectDialog: boolean;
+    setShowConnectDialog: (showConnectDialog: boolean) => void;
 }
 
 type FormData = {
@@ -46,9 +54,20 @@ function User({ isLoggedIn, setIsLoggedIn, showConnectDialog, setShowConnectDial
     const [password, setPassword] = useState('');
     const [displayBasic, setDisplayBasic] = useState(false);
     // const [formData, setFormData] = useState({});
-    // const network = bitcoin.networks.bitcoin;
-    // console.log('network + ')
-    // console.log(network)
+    const network = bitcoin.networks.bitcoin;
+    console.log('network + ')
+    console.log(network)
+    const mnemonic = bip39.generateMnemonic(256);
+    const seed = bip39.mnemonicToSeedSync(mnemonic)
+    console.log('mnemonic ', mnemonic, ' seed ', seed)
+    console.log(bitcoin)
+    // const bip32 = BIP32Factory(ecc);
+    // console.log('btc bip32 ', bip32)
+    // console.log('bip32 utils ', bip32Utils)
+    console.log('btc bip39', bip39)
+    // const hdNode = bitcoin.bip32.fromSeed(seed, network);
+    // console.log('mnemoic ', mnemonic, ' seed ', seed, ' hdNode ', hdNode);
+    // console.log(hdNode)
 
     useEffect(() => {
         const getUsers = async () => {
@@ -56,10 +75,20 @@ function User({ isLoggedIn, setIsLoggedIn, showConnectDialog, setShowConnectDial
             console.log('Current users ', currentUsers)
             // create default
             if (currentUsers.length === 0) {
+                // const accounts = new Accounts()
                 // const me = ECIES().privateKey(aliceKey).publicKey()
                 // console.log('me ', me)
                 // const HDPrivateKey = bitcore.HDPrivateKey;
                 // console.log('HD PRIVATE KEY ', HDPrivateKey)
+                /* const { didDocument, keys } = await secp256k1.generate(
+                 *     {
+                 *         secureRandom: () => {
+                 *             return crypto.randomBytes(32);
+                 *         },
+                 *     },
+                 *     { accept: 'application/did+json' }
+                 * );
+                 * console.log('DID ', didDocument, ' KEYS ', keys) */
             }
         }
         getUsers();

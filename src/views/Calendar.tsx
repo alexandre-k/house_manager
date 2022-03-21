@@ -8,12 +8,12 @@ import { db, Receipt } from '../context/db';
 import dayjs from 'dayjs'
 
 type ICalendarProps = {
-    setDate: (date: number) => void
-    date: number
+    setDate: (date: number) => void;
+    date: number;
 }
 
 type CalendarDate = {
-    day: number
+    day: number;
 }
 
 function InAppCalendar({ date, setDate }: ICalendarProps) {

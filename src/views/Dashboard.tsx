@@ -8,8 +8,8 @@ import './Calendar.css';
 import dayjs from 'dayjs'
 
 type IDashboardProps = {
-    setDate: (date: number) => void
-    date: number
+    setDate: (date: number) => void;
+    date: number;
 }
 
 function Dashboard({ setDate, date }: IDashboardProps) {
