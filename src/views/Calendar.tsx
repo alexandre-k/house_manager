@@ -4,50 +4,53 @@ import { Card } from 'primereact/card';
 import { Badge } from 'primereact/badge';
 import { Calendar } from 'primereact/calendar';
 import './Calendar.css';
-import { db, Receipt } from '../context/db';
-import dayjs from 'dayjs'
-
-type ICalendarProps = {
-    setDate: (date: number) => void;
-    date: number;
-}
+import { getHash, getSignature } from '../utils/key';
+import { dateToUnix, getBeginningMonthDate, getEndMonthDate, getDay, getMonth, unixToDate } from '../utils/date';
+import { useHouseManager, Receipt } from '../context/db';
 
 type CalendarDate = {
     day: number;
+    month: number;
+    year: number;
+    today: boolean;
+    selectable: boolean;
 }
 
-function InAppCalendar({ date, setDate }: ICalendarProps) {
+function InAppCalendar() {
+    const { db, date, setDate } = useHouseManager();
     const navigate = useNavigate();
-    const today = dayjs.unix(date).toDate();
+    const today = unixToDate(date);
+    const [monthReceipts, setMonthReceipts] = useState(0);
     const [receipts, setReceipts] = useState<Record<string, Receipt[]>>({});
     const [receiptsByDate, setReceiptsByDate] = useState<Record<string, Receipt[]>>({});
+    const [viewDate, setViewDate] = useState(new Date(today));
+    const allReceipts = async () => {
+        const found = await db
+            .receipts
+            .where('date')
+            .between(
+                getBeginningMonthDate(date),
+                getEndMonthDate(date)
+            )
+            .toArray();
+        setMonthReceipts(found.length)
+        if (!found) return []
+        console.log('found: ', found)
+        const receiptsByDay: Record<string, Receipt[]> = {};
+        found.forEach((receipt: Receipt) => {
+            const day = getDay(receipt.date);
+            if (!receiptsByDay[day]) receiptsByDay[day] = [];
+            // @ts-ignore
+            receiptsByDay[day].push(receipt);
+        });
+        setReceipts(receiptsByDay);
+    }
     useEffect(() => {
-        const allReceipts = async () => {
-            // if (!date) return []
-            const found = await db
-                .receipts
-                .where('date')
-                .between(
-                    dayjs.unix(date).startOf('month').unix(),
-                    dayjs.unix(date).endOf('month').unix()
-                )
-            // .where({ date })
-                .toArray();
-            if (!receipts) return []
-            console.log('found: ', found)
-            const receiptsByDay: Record<string, Receipt[]> = {};
-            found.forEach(receipt => {
-                const day = dayjs.unix(receipt.date).date();
-                if (!receiptsByDay[day]) receiptsByDay[day] = [];
-                receiptsByDay[day].push(receipt);
-            });
-            setReceipts(receiptsByDay);
-        }
         allReceipts()
-    }, [])
+    }, [viewDate])
 
     const dateTemplate = (d: CalendarDate) => {
-        if (receipts[d.day] !== undefined) {
+        if (receipts[d.day] !== undefined && getMonth(date) === d.month) {
             return (
                         <span className="p-overlay-badge">
                             <span  style={{ zIndex: 10000, color: 'black' }}>
@@ -63,17 +66,22 @@ function InAppCalendar({ date, setDate }: ICalendarProps) {
         }
     }
     return (
-        <Card className="p-shadow-24" id="calendar">
+        <Card className="p-shadow-24" id="calendar" subTitle={monthReceipts + ' receipts found'}>
             <div className="p-fluid grid formgrid">
                 <div className="col-12">
                     <Calendar
                         inline
+                        viewDate={viewDate}
                         value={today}
                         dateTemplate={dateTemplate}
+                        onViewDateChange={(e) => {
+                            setViewDate(e.value)
+                            setDate(dateToUnix(e.value))
+                        }}
                         onSelect={
                         (e) => {
-                            const value = e.value.toString();
-                            setDate(dayjs(value).unix());
+                            // @ts-ignore
+                            setDate(dateToUnix(e.value));
                             navigate('day');
                         } } />
                 </div>

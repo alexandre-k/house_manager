@@ -1,21 +1,31 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './index.css';
 import App from './App';
 import { BrowserRouter as Router } from 'react-router-dom';
 // import { AppProviders } from './context';
-
-
+import './context/i18n';
+import './polyfill'
 import reportWebVitals from './reportWebVitals';
+
+
+// loading component for suspense fallback
+const Loader = () => (
+    <div className="App">
+        <div>loading...</div>
+    </div>
+);
 
 ReactDOM.render(
   <React.StrictMode>
-      <Router>
-          <Routes>
-              <Route path="/*" element={<App />} />
-          </Routes>
-      </Router>
+      <Suspense fallback="{<Loader />}">
+        <Router>
+            <Routes>
+                <Route path="/*" element={<App />} />
+            </Routes>
+        </Router>
+      </Suspense>
   </React.StrictMode>,
   document.getElementById('root')
 );

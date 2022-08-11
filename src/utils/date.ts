@@ -15,7 +15,7 @@ export const pad = (num: number): string => {
 interface Callback { (t: string): string }
 
 export const formatMonth = (t: Callback, currentUnixDate: number) => {
-  const month = dayjs(currentUnixDate).month() + 1
+  const month = dayjs.unix(currentUnixDate).month() + 1
   return t('chart.months.' + month.toString())
 }
 
@@ -24,16 +24,6 @@ type Range = {
     end: number
 }
 
-// const manipulateDate = (startDate: dayjs.Dayjs, step: number, diff: number, stepType: string): dayjs.Dayjs => {
-//   if (step > 0) {
-//     return dayjs(startDate).add(diff, stepType)
-//   }
-//   if (step < 0) {
-//     return dayjs(startDate).subtract(diff, stepType)
-//   }
-//   return startDate
-// }
-
 export const getTimestamp = (date?: string) => {
   if (date === undefined) {
     return dayjs().valueOf()
@@ -41,6 +31,26 @@ export const getTimestamp = (date?: string) => {
     return dayjs(date).valueOf()
   }
 }
+
+export const dateToUnix = (date: Date) => dayjs(date).unix()
+
+export const unixToDate = (timestamp: number) =>
+    dayjs.unix(timestamp).toDate();
+
+export const getDay = (timestamp: number) => dayjs.unix(timestamp).date();
+export const getMonth = (timestamp: number) => dayjs.unix(timestamp).month();
+
+export const getDate = (timestamp: number) => dayjs.unix(timestamp);
+
+export const getUnixTimestamp = () => dayjs().unix();
+
+export const displayDate = (date: dayjs.Dayjs) => date.format('DD/MM/YYYY');
+
+export const getBeginningMonthDate = (timestamp: number) =>
+    getDate(timestamp).startOf('month').unix();
+
+export const getEndMonthDate = (timestamp: number) =>
+    getDate(timestamp).endOf('month').unix()
 
 export const tDetails = {
   day: {
@@ -56,32 +66,3 @@ export const tDetails = {
     unit: 'month'
   }
 }
-
-// export const generateRange = (start: number, step: number, stepType: string) => {
-//   let lastDay: string
-//   let day: string
-//   const startDate = manipulateDate(dayjs(start), step, tDetails[stepType].length, tDetails[stepType].unit)
-//   switch (stepType) {
-//     case 'day':
-//       day = pad(startDate.date())
-//       lastDay = pad(startDate.date())
-//       break
-//     case 'week':
-//       day = pad(startDate.date())
-//       lastDay = pad(dayjs(startDate).add(7, 'day').date())
-//       break
-//     default: {
-//       day = '01'
-//       lastDay = dayjs(startDate).daysInMonth().toString()
-//       break
-//     }
-//   }
-//   const year = startDate.year()
-//   const month = pad(startDate.month() + 1)
-//   return {
-//     start: Date.parse(
-//       year + '-' + month + '-' + day + 'T01:00:00'),
-//     end: Date.parse(
-//       year + '-' + month + '-' + lastDay + 'T23:00:00')
-//   }
-// }

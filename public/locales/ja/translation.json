@@ -1,0 +1,87 @@
+{
+  "common": {
+    "dataIncorrect": "入力したデータが正しくありません。ご確認ください。"
+  },
+  "receipt": {
+    "food": "食費",
+    "entertainment": "遊び",
+    "rent": "家賃",
+    "electricity": "光熱水費",
+    "communication": "通信費",
+    "dailyNecessities": "日用品",
+    "eatOutside": "外食費",
+    "expenditureType": "カテゴリー",
+    "newReceipt": "新しい領収書を入れる",
+    "nothingYet": "まだ領収書がない",
+    "amount": "金額",
+    "uploadLocalPicture": "スクショをアップロードする",
+    "takePicture": "写真を撮ってアップロードする"
+  },
+  "overview": {
+    "chart": "チャート",
+    "total": "合計"
+  },
+  "login": {
+    "username": "ユーザ名",
+    "email": "メール",
+    "password": "パスワード",
+    "login": "ログイン"
+  },
+  "calendar": {
+    "calendar": "カレンダー",
+    "chart": "チャート",
+    "share": "共有",
+    "chat": "チャット",
+    "settings": "設定",
+    "householdExpenses": "家計簿"
+  },
+  "bar": {
+    "period": {
+      "day": "日",
+      "week": "週",
+      "month": "月"
+    },
+    "previous": "先",
+    "next": "次"
+  },
+  "chart": {
+    "receiptsFrom": "の領収書",
+    "months": {
+      "1": "1月",
+      "2": "2月",
+      "3": "3月",
+      "4": "4月",
+      "5": "5月",
+      "6": "6月",
+      "7": "7月",
+      "8": "8月",
+      "9": "9月",
+      "10": "10月",
+      "11": "11月",
+      "12": "12月"
+    },
+    "day": "日"
+  },
+  "share": {
+    "importPeerDB": "友達のデータをインポートする",
+    "myDatabaseID": "私のデータベースID",
+    "peerDatabaseID": "友達のデータベースID",
+    "sync": "同期",
+    "copying": "領収書をコピー中。。。",
+    "doNotWait": "待たない",
+    "done": "閉じる"
+  },
+  "settings": {
+    "me": "自分",
+    "peer": "友達",
+    "name": "名前",
+    "connectWithPeerId": "友達とつなげる",
+    "peerId": "友達のID",
+    "cancel": "キャンセル"
+  },
+  "newUsers": {
+    "newUserAdded": "New user added!",
+    "addNewUser": "Add user",
+    "user": "User:"
+  }
+}

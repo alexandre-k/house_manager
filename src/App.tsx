@@ -15,12 +15,19 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Toolbar } from 'primereact/toolbar';
 import { TabMenu } from 'primereact/tabmenu';
 import { useContext } from 'react';
+import { HouseManager, Receipt, HouseManagerContext } from './context/db';
 import './App.css';
 import Dashboard from './views/Dashboard';
 import Day from './views/Day';
 import InAppCalendar from './views/Calendar';
+import { getUnixTimestamp } from './utils/date';
+import Share from './components/Share';
 import User from './components/User';
-import dayjs from 'dayjs';
+import { Account } from 'web3-core'
+import { ethers, providers } from 'ethers';
+import Web3Moal from 'web3modal';
+import WalletConnectProvider from '@walletconnect/web3-provider';
+import WalletLink from 'walletlink';
 
 type NavigationItem = {
     route: string,
@@ -29,59 +36,28 @@ type NavigationItem = {
 }
 
 function App() {
-
-    /* const { control, formState: { errors }, handleSubmit, reset } = useForm(
-     *     {
-     *         name: '',
-     *         password: '',
-     *         accept: false
-     *     }); */
+    const db = new HouseManager();
     const [showConnectDialog, setShowConnectDialog] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
     const [displayBasic, setDisplayBasic] = useState(false);
-    const [formData, setFormData] = useState({});
     const navigate = useNavigate();
     const location = useLocation();
 
-    // const isLoading = true;
-    // user.once(u => console.log('user > ', u))
     const navigationRoutes: Array<NavigationItem> = [
         { route: '/calendar', command: () => navigate('/calendar'), icon: 'pi pi-fw pi-calendar' },
         { route: '/dashboard', command: () => navigate('/dashboard'), icon: 'pi pi-fw pi-chart-pie' },
-        /* { route: '/share', icon: 'pi pi-fw pi-share-alt' },
-         * { route: '/chat', icon: 'pi pi-fw pi-discord' },
-         * { route: '/settings', icon: 'pi pi-fw pi-cog' } */
+        { route: '/share', command: () => navigate('/share'), icon: 'pi pi-fw pi-share-alt' }
     ];
 
     const index = navigationRoutes.findIndex(
         item => item.route === location.pathname)
     const [activeIndex, setActiveIndex] = useState(index === -1 ? 0 : index);
 
-    /* const loading = () => {
-     *     if (isLoading) {
-     *         return <ProgressBar mode="indeterminate" />
-     *     }
-     * } */
-
-    /* const items = [
-     *     {
-     *         label: 'Users',
-     *         icon: 'pi pi-fw pi-user'
-     *     },
-     *     {
-     *         label: 'Quit',
-     *         icon: 'pi pi-fw pi-power-off'
-     *     }
-     * ] */
      const end = {
         label: 'Quit',
         icon: 'pi pi-fw pi-power-off'
     }
 
-    console.log(dayjs().unix())
-    const [date, setDate] = useState<number>(dayjs().unix());
+    const [date, setDate] = useState<number>(getUnixTimestamp());
 
     const onHide = () => {
         setShowConnectDialog(false);
@@ -89,9 +65,6 @@ function App() {
 
     const disconnect = () => {
         console.log('Disconnect');
-        /* user.leave(function(ack) {
-         *     console.log('Leaved: ', ack);
-         * }); */
     }
     const connect = () => {
         setShowConnectDialog(true);
@@ -101,37 +74,40 @@ function App() {
 
     const connectButton = <Button label="Connect" className="p-button-primary mt-0" onClick={connect} />;
 
-   const rightContents = isLoggedIn? walletButton : connectButton;
-
+    const user = <User />
     const toolBarStyle = { width: '100%', height: '55px' };
 
-    return (
-        <>
-            <User
-                isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
-                showConnectDialog={showConnectDialog}
-                setShowConnectDialog={setShowConnectDialog}
+    const routes = [
+        { path: "/share", element: <Share /> },
+        { path: "/share/receive/:nonce/:toPublicKey", element: <Share /> },
+        { path: "/dashboard", element: <Dashboard /> },
+        { path: "/calendar", element: <InAppCalendar /> },
+        { path: "/calendar/day", element: <Day date={date} /> },
+        { path: "/calendar", element: <InAppCalendar /> },
+    ]
+
+        return (
+            <HouseManagerContext.Provider value={{ db, date, setDate }}>
+            <Toolbar
+                className="pt-1"
+                style={toolBarStyle}
+                right={user}
             />
-            <Toolbar className="pt-1" style={toolBarStyle} right={rightContents} />
-            {/* <ProgressBar mode="indeterminate" /> */}
             <div className="flex align-items-center" id="content">
                 <Routes>
-                    <Route path="/dashboard" element={<Dashboard setDate={setDate} date={date} />}/>
-                    <Route path="/calendar" element={<InAppCalendar date={date} setDate={setDate} />}/>
-                    <Route path="/calendar/day" element={<Day date={date} />} />
-
-                    <Route path="*" element={<Navigate to="/calendar" replace />} />
-                    {/* <Route path="chart" element={<Chart />} /> */}
+            {routes.map((route, idx) => <Route key={idx} path={route.path} element={route.element}/>)}
+                    <Route
+                        path="*"
+                        element={<Navigate to="/calendar" replace />} />
                 </Routes>
             </div>
             <TabMenu
                 id="tabMenu"
                 model={navigationRoutes}
-            activeIndex={activeIndex}
+                activeIndex={activeIndex}
                 onTabChange={(e => setActiveIndex(e.index) )}
             />
-        </>
+            </HouseManagerContext.Provider>
     );
 }
 
