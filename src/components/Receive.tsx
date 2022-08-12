@@ -69,7 +69,7 @@ function Receive() {
     return (
         <>
             <div className="col-12 md:col-12">
-                <QrCode keyPair={keyPair} />
+                {keyPair && <QrCode keyPair={keyPair} />}
             </div>
         </>
     )
