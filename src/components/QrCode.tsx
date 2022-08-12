@@ -1,36 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-const Account = require('web3-eth-accounts');
 import { Button } from 'primereact/button';
-import EthCrypto from 'eth-crypto';
 import QRCodeStyling from 'qr-code-styling';
-import { web3 } from '../context/crypto';
-import { Key } from '../context/db';
-import { useHouseManager } from '../context/db';
-var nacl = require('tweetnacl');
-nacl.util = require('tweetnacl-util');
+import { Key, KeyPair } from '../context/db';
+import { serializeKeyPair } from '../utils/key';
 
 type IQrCodeProps = {
-    accounts: string[];
+    keyPair: KeyPair;
 }
 
 
-function QrCode({ accounts }: IQrCodeProps) {
-    const { db } = useHouseManager();
-    const [publicKey, setPublicKey] = useState<string>('');
+function QrCode({ keyPair }: IQrCodeProps) {
     const [created, setCreated] = useState<boolean>(false);
     const canvas = useRef<HTMLElement|null>(document.getElementById('publicKey'));
 
     const generateUrl = async () => {
-        const keys = await db.keys.toArray();
-        const keyPair = keys[0];
         if (!keyPair) {
             alert('Bad key pair, not found');
             throw('Bad key pair, not found');
         }
-        const nonce = nacl.util.encodeBase64(keyPair.nonce);
-        const publicKey = nacl.util.encodeBase64(keyPair.publicKey);
-        const url = location.href + '/receive/' + nonce + '/' + publicKey
-        return url
+        const { nonce, publicKey } = serializeKeyPair(keyPair);
+        return location.href + '/receive/' + nonce + '/' + publicKey
     }
 
     const onCopy = async () => {
@@ -43,7 +32,7 @@ function QrCode({ accounts }: IQrCodeProps) {
     }
 
     const makeQrCode = async () => {
-        if (!accounts || !canvas || created) return;
+        if (!keyPair || !canvas || created) return;
         try {
             const url = await generateUrl();
             setCreated(true);

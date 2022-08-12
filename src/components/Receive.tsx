@@ -8,33 +8,33 @@ import { Checkbox } from 'primereact/checkbox';
 import QrCode from '../components/QrCode';
 import { useHouseManager, Key } from '../context/db';
 import { formatAddress } from '../utils/key';
-const Account = require('web3-eth-accounts');
+// const Account = require('web3-eth-accounts');
 const AWS = require('aws-sdk');
-import { web3 } from '../context/crypto';
-import EthCrypto from 'eth-crypto';
-const ethUtil = require('ethereumjs-util');
-const sigUtil = require('@metamask/eth-sig-util');
-const tweetnacl = require('tweetnacl'); 
+// import { web3 } from '../context/crypto';
+// import EthCrypto from 'eth-crypto';
+// const ethUtil = require('ethereumjs-util');
+// const sigUtil = require('@metamask/eth-sig-util');
+const tweetnacl = require('tweetnacl');
 tweetnacl.util = require('tweetnacl-util');
 
 
 function Receive() {
-    const { db } = useHouseManager();
+    const { db, keyPair } = useHouseManager();
     const [fromPublicKey, setFromPublicKey] = useState<string>('');
-    const [accounts, setAccounts] = useState<string[]>([]);
+    // const [accounts, setAccounts] = useState<string[]>([]);
     const getProviderAddress = async () => {
         try {
-            const retrievedAccounts = await web3.eth.getAccounts();
-            setAccounts(retrievedAccounts);
+            // const retrievedAccounts = await web3.eth.getAccounts();
+            // setAccounts(retrievedAccounts);
         } catch (error) {
             console.log('[New Receipts] getAccounts: ', error)
         }
     }
 
-    useEffect(() => {
-        getProviderAddress();
-    }, []);
-
+    /* useEffect(() => {
+     *     getProviderAddress();
+     * }, []);
+     */
     const downloadData = async () => {
         const params = {
             Bucket: 'kakeibo-skynet',
@@ -43,13 +43,7 @@ function Receive() {
         // @ts-ignore
         const request = s3.getObject(params, async (err, data) => {
             if (err) alert(err)
-            const keyPairs = await db.keys.toArray();
             // create default
-            if (keyPairs.length === 0) {
-                alert('No key created')
-                return;
-            }
-            const keyPair = keyPairs[0];
             const body = data.Body;
             // decrypt the encrypted message
 
@@ -75,7 +69,7 @@ function Receive() {
     return (
         <>
             <div className="col-12 md:col-12">
-                <QrCode accounts={accounts} />
+                <QrCode keyPair={keyPair} />
             </div>
         </>
     )

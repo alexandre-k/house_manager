@@ -35,7 +35,6 @@ function InAppCalendar() {
             .toArray();
         setMonthReceipts(found.length)
         if (!found) return []
-        console.log('found: ', found)
         const receiptsByDay: Record<string, Receipt[]> = {};
         found.forEach((receipt: Receipt) => {
             const day = getDay(receipt.date);

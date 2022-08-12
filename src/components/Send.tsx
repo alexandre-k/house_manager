@@ -9,17 +9,13 @@ import QrCode from '../components/QrCode';
 import { useHouseManager, Key, Receipt } from '../context/db';
 import { formatAddress } from '../utils/key';
 import QrCodeScanner from '../components/QrCodeScanner';
-const AWS = require('aws-sdk');
-import { web3 } from '../context/crypto';
+// const AWS = require('aws-sdk');
 import { s3 } from '../context/filebase';
-import EthCrypto from 'eth-crypto';
-const ethUtil = require('ethereumjs-util');
-const sigUtil = require('@metamask/eth-sig-util');
-const tweetnacl = require('tweetnacl'); 
+const tweetnacl = require('tweetnacl');
 tweetnacl.util = require('tweetnacl-util');
 
 function Send() {
-    const { db } = useHouseManager();
+    const { db, keyPair } = useHouseManager();
     const { nonce, toPublicKey } = useParams()
     const [uploadReceipts, setUploadReceipts] = useState<boolean>(true);
     const [uploadImages, setUploadImages] = useState<boolean>(false);
@@ -66,13 +62,6 @@ function Send() {
             });
         try {
             setLoading(true);
-            const keys = await db.keys.toArray();
-            const keyPair = keys[0];
-
-            if (!keyPair) {
-                alert('Bad key pair, not found');
-                return;
-            }
             const encryptedReceipts = tweetnacl.box(
                 tweetnacl.util.decodeUTF8(JSON.stringify(targetReceipts)),
                 nonce,

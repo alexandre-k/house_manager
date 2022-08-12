@@ -7,11 +7,9 @@ import { Image } from 'primereact/image';
 import { Card } from 'primereact/card';
 import { getTimestamp } from '../utils/date';
 import { categoryColors } from '../utils/categories';
-import { formatAddress, HashedReceipt, verifyReceipt } from '../utils/key';
-import { useHouseManager, Receipt } from '../context/db';
+import { formatAddress, HashedReceipt } from '../utils/key';
+import { KeyPair, useHouseManager, Receipt } from '../context/db';
 const accounting = require("accounting");
-import { web3 } from '../context/crypto';
-import { Account } from 'web3-core'
 import { DisplayedReceipt } from '../types/receipts';
 import AddReceiptButton from '../components/AddReceiptBtn';
 
@@ -24,16 +22,9 @@ type Props = {
 }
 
 function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }: Props) {
-    const { db, date } = useHouseManager();
+    const { db, date, keyPair } = useHouseManager();
     const navigate = useNavigate();
-    const [accounts, setAccounts] = useState<string[]>([]);
     useEffect(() => {
-        const getAccounts = async () => {
-            const requestedAccounts = await web3.eth.requestAccounts()
-            const accounts = await web3.eth.getAccounts();
-            setAccounts(accounts);
-        }
-        getAccounts();
 
         const allReceipts = async () => {
             if (!date) return []
@@ -73,17 +64,14 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
         );
     }
 
-    const recoverAddress = (receipt: DisplayedReceipt) => {
-        if (accounts === []) return '';
-        return '';
+    const isOwnReceipt = (signAddress: string, account: string | undefined) => {
+        if (!account) return false;
+        return signAddress === account;
     }
 
-    const isOwnReceipt = (signAddress: string, account: string[] | undefined) => {
-        if (!account || !account[0]) return false;
-        return signAddress === accounts[0];
-    }
-
-    const subTitle = (receipt: DisplayedReceipt) => 'By ' + formatAddress(accounts) + isOwnReceipt(recoverAddress(receipt), accounts) ? ' Verified by me' : ''
+    const subTitle = (receipt: DisplayedReceipt, keyPair: KeyPair) =>
+        'By ' + formatAddress(keyPair.account) + isOwnReceipt('', keyPair.account) ?
+        ' Verified by me' : ''
 
 
     const receiptDataUrl = (receipt: DisplayedReceipt) => {
@@ -115,7 +103,7 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
                     className="p-shadow-24"
                     header={() =>  header(receipt)}
                     title={accounting.formatMoney(receipt.amount, { symbol: '¥' })}
-                    subTitle={subTitle(receipt)}
+                    subTitle={subTitle(receipt, keyPair)}
                     style={{ height: '100%', background: categoryColors[receipt.category] }}>
                     <p>{}</p>
                     <Image

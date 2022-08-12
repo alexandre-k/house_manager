@@ -1,11 +1,10 @@
-import react, { useEffect, useState } from 'react';
+import react, { useState } from 'react';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { Dropdown } from 'primereact/dropdown';
 import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { InputNumber } from 'primereact/inputnumber';
-// import { useAuth } from '@altrx/gundb-react-auth';
 import { expenditureTypes, expenditureColors } from '../utils/categories'
 // @ts-ignore
 import browserImageSize from 'browser-image-size'
@@ -13,7 +12,6 @@ import browserImageSize from 'browser-image-size'
 import { readAndCompressImage } from 'browser-image-resizer'
 import { Buckets, PushPathResult, KeyInfo, PrivateKey, WithKeyInfoOptions } from '@textile/hub'
 import { useHouseManager } from '../context/db';
-import { web3 } from '../context/crypto';
 import { getHash } from '../utils/key';
 
 type INewReceiptProps = {
@@ -22,7 +20,7 @@ type INewReceiptProps = {
 }
 
 function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
-    const { db } = useHouseManager();
+    const { db, keyPair } = useHouseManager();
     const [price, setPrice] = useState<number | null>(null);
     const [category, setCategory] = useState(expenditureTypes[0]);
     const [imageName, setImageName] = useState('');
@@ -31,20 +29,6 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const [imageSize, setImageSize] = useState(0);
     const [accounts, setAccounts] = useState<string[]>([]);
     const labeledCategories = expenditureTypes.map(e => Object.assign({}, {label: e, value: e }));
-
-    useEffect(() => {
-        const getProviderAddress = async () => {
-            try {
-                const retrievedAccounts = await web3.eth.getAccounts();
-                setAccounts(retrievedAccounts);
-            } catch (error) {
-                console.log('[New Receipts] getAccounts: ', error)
-            }
-        }
-
-        getProviderAddress();
-    }, []);
-
 
     const readFile = (file: File): Promise<ArrayBuffer | null> => {
         return new Promise((resolve, reject) => {

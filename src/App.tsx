@@ -15,7 +15,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Toolbar } from 'primereact/toolbar';
 import { TabMenu } from 'primereact/tabmenu';
 import { useContext } from 'react';
-import { HouseManager, Receipt, HouseManagerContext } from './context/db';
+import { KeyPair, HouseManager, Receipt, HouseManagerContext } from './context/db';
 import './App.css';
 import Dashboard from './views/Dashboard';
 import Day from './views/Day';
@@ -23,11 +23,12 @@ import InAppCalendar from './views/Calendar';
 import { getUnixTimestamp } from './utils/date';
 import Share from './components/Share';
 import User from './components/User';
-import { Account } from 'web3-core'
-import { ethers, providers } from 'ethers';
-import Web3Moal from 'web3modal';
-import WalletConnectProvider from '@walletconnect/web3-provider';
-import WalletLink from 'walletlink';
+import { generateKeyPair } from './utils/key';
+// import { Account } from 'web3-core'
+// import { ethers, providers } from 'ethers';
+// import Web3Moal from 'web3modal';
+// import WalletConnectProvider from '@walletconnect/web3-provider';
+// import WalletLink from 'walletlink';
 
 type NavigationItem = {
     route: string,
@@ -39,8 +40,14 @@ function App() {
     const db = new HouseManager();
     const [showConnectDialog, setShowConnectDialog] = useState(false);
     const [displayBasic, setDisplayBasic] = useState(false);
+    const [keyPair, setKeyPair] = useState<KeyPair>(null as any);
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        if (!keyPair)
+            generateKeyPair(db).then(keyPair => setKeyPair(keyPair));
+    })
 
     const navigationRoutes: Array<NavigationItem> = [
         { route: '/calendar', command: () => navigate('/calendar'), icon: 'pi pi-fw pi-calendar' },
@@ -87,7 +94,7 @@ function App() {
     ]
 
         return (
-            <HouseManagerContext.Provider value={{ db, date, setDate }}>
+            <HouseManagerContext.Provider value={{ db, keyPair, date, setDate }}>
             <Toolbar
                 className="pt-1"
                 style={toolBarStyle}

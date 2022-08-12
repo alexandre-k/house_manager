@@ -27,7 +27,7 @@ export interface Key {
     publicKey: Uint8Array;
     secretKey: Uint8Array;
     nonce: Uint8Array;
-    accounts: string[]
+    account: string;
 }
 
 export class HouseManager extends Dexie {
@@ -45,10 +45,18 @@ export class HouseManager extends Dexie {
     }
 }
 
+export interface KeyPair {
+    publicKey: Uint8Array;
+    secretKey: Uint8Array;
+    nonce: Uint8Array;
+    account: string;
+}
+
 interface IHouseManagerContext {
     db: HouseManager;
     setDate: (date: number) => void;
     date: number;
+    keyPair: KeyPair
 }
 
 export const HouseManagerContext = createContext(null as any);

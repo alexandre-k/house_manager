@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-const Account = require('web3-eth-accounts');
+// const Account = require('web3-eth-accounts');
 import { InputText } from 'primereact/inputtext';
 import {Html5QrcodeScanner} from "html5-qrcode"
 
