@@ -4,9 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './index.css';
 import App from './App';
 import { BrowserRouter as Router } from 'react-router-dom';
-// import { AppProviders } from './context';
 import './context/i18n';
-import './polyfill'
 import reportWebVitals from './reportWebVitals';
 
 
