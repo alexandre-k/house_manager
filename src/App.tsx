@@ -49,16 +49,6 @@ function App() {
             generateKeyPair(db).then(keyPair => setKeyPair(keyPair));
     })
 
-    const navigationRoutes: Array<NavigationItem> = [
-        { route: '/calendar', command: () => navigate('/calendar'), icon: 'pi pi-fw pi-calendar' },
-        { route: '/dashboard', command: () => navigate('/dashboard'), icon: 'pi pi-fw pi-chart-pie' },
-        { route: '/share', command: () => navigate('/share'), icon: 'pi pi-fw pi-share-alt' }
-    ];
-
-    const index = navigationRoutes.findIndex(
-        item => item.route === location.pathname)
-    const [activeIndex, setActiveIndex] = useState(index === -1 ? 0 : index);
-
      const end = {
         label: 'Quit',
         icon: 'pi pi-fw pi-power-off'
@@ -92,6 +82,15 @@ function App() {
         { path: "/calendar/day", element: <Day date={date} /> },
         { path: "/calendar", element: <InAppCalendar /> },
     ]
+
+    const navigationRoutes: Array<NavigationItem> = [
+        { route: '/calendar', command: () => navigate('/calendar'), icon: 'pi pi-fw pi-calendar' },
+        { route: '/dashboard', command: () => navigate('/dashboard'), icon: 'pi pi-fw pi-chart-pie' },
+        { route: '/share', command: () => navigate('/share'), icon: 'pi pi-fw pi-share-alt' }
+    ];
+
+    const index = navigationRoutes.findIndex(item => location.pathname.startsWith(item.route))
+    const [activeIndex, setActiveIndex] = useState(index === -1 ? 0 : index);
 
         return (
             <HouseManagerContext.Provider value={{ db, keyPair, date, setDate }}>

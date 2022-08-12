@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import QRCodeStyling from 'qr-code-styling';
 import { Key, KeyPair } from '../context/db';
-import { serializeKeyPair } from '../utils/key';
+import { serializeNoncePubKey } from '../utils/key';
 
 type IQrCodeProps = {
     keyPair: KeyPair;
@@ -10,6 +10,7 @@ type IQrCodeProps = {
 
 
 function QrCode({ keyPair }: IQrCodeProps) {
+    const { nonce, publicKey } = serializeNoncePubKey(keyPair.nonce, keyPair.publicKey);
     const [created, setCreated] = useState<boolean>(false);
     const canvas = useRef<HTMLElement|null>(document.getElementById('publicKey'));
 
@@ -18,14 +19,14 @@ function QrCode({ keyPair }: IQrCodeProps) {
             alert('Bad key pair, not found');
             throw('Bad key pair, not found');
         }
-        const { nonce, publicKey } = serializeKeyPair(keyPair);
-        return location.href + '/receive/' + nonce + '/' + publicKey
+        return location.href + '/receive/' + nonce+ '/' + publicKey
     }
 
-    const onCopy = async () => {
+    const onCopy = async (copiedText: string) => {
         try {
-            const url = await generateUrl();
-            navigator.clipboard.writeText(url);
+            // const url = await generateUrl();
+            // console.log(url)
+            navigator.clipboard.writeText(copiedText);
         } catch (err) {
             alert(err);
         }
@@ -76,10 +77,14 @@ function QrCode({ keyPair }: IQrCodeProps) {
             <div
                 className="flex align-content-center justify-content-center"
                 id="publicKey"
+                style={{ maxWidth: '220px' }}
             >
             </div>
 
-            <Button label="share download url" icon="pi pi-copy" onClick={onCopy} />
+            <div className="flex flex-grow-1 flex-column justify-content-around" style={{ minHeight: '120px'}}>
+            <Button label="share nonce" icon="pi pi-copy" onClick={() => onCopy(nonce)} />
+            <Button label="share public key" icon="pi pi-copy" onClick={() => onCopy(publicKey)} />
+            </div>
         </>
     );
 }

@@ -7,14 +7,14 @@ import {Html5QrcodeScanner} from "html5-qrcode"
 type IQrCodeProps = {
     nonce: string | undefined;
     publicKey: string | undefined;
+    setNonce: (nonce: string) => void;
+    setPublicKey: (publicKey: string) => void;
 
 }
 
 
-function QrCodeScanner({ nonce, publicKey }: IQrCodeProps) {
+function QrCodeScanner({ nonce, publicKey, setPublicKey, setNonce }: IQrCodeProps) {
     const [created, setCreated] = useState<boolean>(false);
-    const [userPublicKey, setUserPublicKey] = useState<string>(publicKey ? publicKey : '');
-    const [userNonce, setUserNonce] = useState<string>(nonce ? nonce : '');
     const canvas = useRef<HTMLElement|null>(document.getElementById('publicKey'));
 
     // @ts-ignore
@@ -44,16 +44,16 @@ function QrCodeScanner({ nonce, publicKey }: IQrCodeProps) {
             {/* <input type="file" id="qr-input-file" accept="image/*" /> */}
                 <span className="p-float-label">
                     <InputText
-                        value={userPublicKey}
-                        onChange={(e) => setUserPublicKey(e.target.value)} />
+                        value={publicKey}
+                        onChange={(e) => setPublicKey(e.target.value)} />
                     <label htmlFor="in">Destination address</label>
                 </span>
             </div>
             <div className="col-12 md:col-12">
                 <span className="p-float-label">
                     <InputText
-                        value={userNonce}
-                        onChange={(e) => setUserNonce(e.target.value)} />
+                        value={nonce}
+                        onChange={(e) => setNonce(e.target.value)} />
                     <label htmlFor="in">Nonce</label>
                 </span>
             </div>

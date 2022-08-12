@@ -1,5 +1,5 @@
-var nacl = require('tweetnacl');
-nacl.util = require('tweetnacl-util');
+import { box, hash, randomBytes, sign } from 'tweetnacl';
+import { decodeBase64, encodeBase64, decodeUTF8 } from 'tweetnacl-util';
 import { HouseManager, KeyPair } from '../context/db';
 
 export type HashedReceipt = {
@@ -16,24 +16,31 @@ export const formatAddress = (account: string | undefined) => {
     return account.substring(0, 5) + '...' + account.substring(37, 42);
 }
 
-export const serializeKeyPair = (keyPair: KeyPair) => {
-    const nonce = nacl.util.encodeBase64(keyPair.nonce);
-    const publicKey = nacl.util.encodeBase64(keyPair.publicKey);
-    return { publicKey, nonce };
+export const serializeNoncePubKey = (nonce: Uint8Array, publicKey: Uint8Array) => {
+    if (!nonce || !publicKey) return { publicKey: '', nonce: '' }
+    return {
+        nonce: encodeBase64(nonce),
+        publicKey: encodeBase64(publicKey)
+    };
 }
+export const deserializeNoncePubKey = (nonce: string, publicKey: string) => ({
+    nonce: decodeBase64(nonce) || "",
+    publicKey: decodeBase64(publicKey) || ""
+});
 
 export const generateKeyPair= async (db: HouseManager) => {
     const keyPairs = await db.keys.toArray();
     const keyPair = keyPairs.pop()
+
     if (!keyPair || !keyPair.publicKey || !keyPair.secretKey) {
         // create default
-        const keyPair = nacl.box.keyPair();
-        const nonce = nacl.randomBytes(16);
+        const keyPair = box.keyPair();
+        const nonce = randomBytes(16);
         const encryptionKeys = {
             publicKey: keyPair.publicKey as Uint8Array,
             secretKey: keyPair.secretKey as Uint8Array,
             nonce: nonce as Uint8Array,
-            account: nacl.util.encodeBase64(keyPair.publicKey)
+            account: encodeBase64(keyPair.publicKey)
         }
         if (keyPair.publicKey) {
             await db.keys.put(encryptionKeys, keyPair.publicKey);
@@ -63,9 +70,9 @@ export const verifyReceipt = (receipt: HashedReceipt, keyPair: KeyPair) => {
 }
 
 export const getHash = (receipt: HashedReceipt) => {
-    return nacl.hash(nacl.util.decodeUTF8(JSON.stringify(receipt)));
+    return hash(decodeUTF8(JSON.stringify(receipt)));
 }
 
-export const getSignature = (keyPair: KeyPair, hash: string) => {
-    return nacl.sign(hash, keyPair.secretKey);
+export const getSignature = (keyPair: KeyPair, hash: Uint8Array) => {
+    return sign(hash, keyPair.secretKey);
 }

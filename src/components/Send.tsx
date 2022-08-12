@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { InputText } from 'primereact/inputtext';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import QrCode from '../components/QrCode';
 import { useHouseManager, Key, Receipt } from '../context/db';
-import { formatAddress } from '../utils/key';
+import { deserializeNoncePubKey, formatAddress, serializeNoncePubKey } from '../utils/key';
 import QrCodeScanner from '../components/QrCodeScanner';
 // const AWS = require('aws-sdk');
 import { s3 } from '../context/filebase';
@@ -16,7 +15,9 @@ tweetnacl.util = require('tweetnacl-util');
 
 function Send() {
     const { db, keyPair } = useHouseManager();
-    const { nonce, toPublicKey } = useParams()
+    const { nonce: nonceParam, toPublicKey: publicKeyParam } = useParams()
+    const [publicKey, setPublicKey] = useState<string>(publicKeyParam || '');
+    const [nonce, setNonce] = useState<string>(nonceParam || '');
     const [uploadReceipts, setUploadReceipts] = useState<boolean>(true);
     const [uploadImages, setUploadImages] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
@@ -62,10 +63,12 @@ function Send() {
             });
         try {
             setLoading(true);
+            if (!nonce || !publicKey) throw new Error('Invalid nonce or public key');
+            const deserializedKey = deserializeNoncePubKey(nonce, publicKey)
             const encryptedReceipts = tweetnacl.box(
                 tweetnacl.util.decodeUTF8(JSON.stringify(targetReceipts)),
-                nonce,
-                toPublicKey,
+                deserializedKey.nonce,
+                deserializedKey.publicKey,
                 keyPair.secretKey
             );
 
@@ -90,8 +93,10 @@ function Send() {
         <div className="grid m-2">
             <div className="col-12 md:col-12">
                 <QrCodeScanner
-                    nonce={nonce}
-                    publicKey={toPublicKey}
+                    nonce={nonceParam}
+                    publicKey={publicKeyParam}
+                    setNonce={setNonce}
+                    setPublicKey={setPublicKey}
                 />
             </div>
         <div
