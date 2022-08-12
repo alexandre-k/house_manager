@@ -9,34 +9,19 @@ import QrCode from '../components/QrCode';
 import QrCodeScanner from '../components/QrCodeScanner';
 import Receive from '../components/Receive';
 import Send from '../components/Send';
-import { formatAddress } from '../utils/key';
-// const Account = require('web3-eth-accounts');
-// const AWS = require('aws-sdk');
-// import { web3 } from '../context/crypto';
-// import EthCrypto from 'eth-crypto';
-// const ethUtil = require('ethereumjs-util');
-// const sigUtil = require('@metamask/eth-sig-util');
-// const tweetnacl = require('tweetnacl'); 
-// tweetnacl.util = require('tweetnacl-util');
+import { useHouseManager } from '../context/db';
+import { formatAddress, generateNonce } from '../utils/key';
 
 
 function Share() {
-    const { nonce, toPublicKey } = useParams()
-    const [activeIndex, setActiveIndex] = useState( nonce && toPublicKey ? 1 : 0);
-    /* useEffect(() => {
-     *     const getProviderAddress = async () => {
-     *         try {
-     *             const retrievedAccounts = await web3.eth.getAccounts();
-     *             setAccounts(retrievedAccounts);
-     *         } catch (error) {
-     *             console.log('[New Receipts] getAccounts: ', error)
-     *         }
-     *     }
-
-     *     getProviderAddress();
-     * }, []);
-
-     */
+    const { db, keyPair } = useHouseManager();
+    const [publicKey, setPublicKey] = useState<Uint8Array>(null as any);
+    const [nonce, setNonce] = useState<Uint8Array>(generateNonce());
+    const [activeIndex, setActiveIndex] = useState(0);
+    useEffect(() => {
+        if (!!keyPair)
+            setPublicKey(keyPair.publicKey)
+    }, [keyPair])
     return (
         <Card className="p-shadow-24" title="領収書の共有">
             <div
@@ -45,10 +30,10 @@ function Share() {
                     activeIndex={activeIndex}
                     onTabChange={(e) => setActiveIndex(e.index)}>
                     <TabPanel header="受ける">
-                        <Receive />
+                        <Receive nonce={nonce} />
                     </TabPanel>
                     <TabPanel header="送る">
-                        <Send />
+                        <Send publicKey={publicKey} nonce={nonce} setPublicKey={setPublicKey} setNonce={setNonce} />
                     </TabPanel>
                 </TabView>
             </div>

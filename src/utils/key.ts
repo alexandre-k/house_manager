@@ -1,6 +1,6 @@
 import { box, hash, randomBytes, sign } from 'tweetnacl';
-import { decodeBase64, encodeBase64, decodeUTF8 } from 'tweetnacl-util';
-import { HouseManager, KeyPair } from '../context/db';
+import { decodeBase64, encodeBase64, encodeUTF8, decodeUTF8 } from 'tweetnacl-util';
+import { HouseManager, KeyPair, Receipt } from '../context/db';
 
 export type HashedReceipt = {
     amount: number;
@@ -16,6 +16,8 @@ export const formatAddress = (account: string | undefined) => {
     return account.substring(0, 5) + '...' + account.substring(37, 42);
 }
 
+export const toHex = (buf: Uint8Array) => Buffer.from(buf).toString('hex')
+
 export const serializeNoncePubKey = (nonce: Uint8Array, publicKey: Uint8Array) => {
     if (!nonce || !publicKey) return { publicKey: '', nonce: '' }
     return {
@@ -27,6 +29,9 @@ export const deserializeNoncePubKey = (nonce: string, publicKey: string) => ({
     nonce: decodeBase64(nonce) || "",
     publicKey: decodeBase64(publicKey) || ""
 });
+
+export const fromBase64 = (str: string) => decodeBase64(str);
+export const toBase64 = (bytes: Uint8Array) => encodeBase64(bytes);
 
 export const generateKeyPair= async (db: HouseManager) => {
     const keyPairs = await db.keys.toArray();
@@ -73,6 +78,32 @@ export const getHash = (receipt: HashedReceipt) => {
     return hash(decodeUTF8(JSON.stringify(receipt)));
 }
 
+export const toBytes = (decodedMessage: Uint8Array): string => encodeUTF8(decodedMessage);
+
 export const getSignature = (keyPair: KeyPair, hash: Uint8Array) => {
     return sign(hash, keyPair.secretKey);
+}
+
+export const generateNonce = (): Uint8Array => randomBytes(24);
+
+// @ts-ignore
+export const encryptReceipts = (targetReceipts: Array<Receipt>, nonce: Uint8Array, publicKey: Uint8Array, secretKey: Uint8Array) => {
+    return box(
+        decodeUTF8(JSON.stringify(targetReceipts)),
+        nonce,
+        publicKey,
+        secretKey
+    );
+}
+
+export const decryptReceipts = (body: Uint8Array, nonce: Uint8Array, publicKey: Uint8Array, secretKey: Uint8Array) => {
+    const decryptedBody = box.open(
+        body,
+        nonce,
+        publicKey,
+        secretKey
+    );
+
+    if (!decryptedBody) return null;
+    return encodeUTF8(decryptedBody);
 }

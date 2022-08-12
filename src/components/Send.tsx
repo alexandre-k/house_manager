@@ -6,22 +6,32 @@ import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import QrCode from '../components/QrCode';
 import { useHouseManager, Key, Receipt } from '../context/db';
-import { deserializeNoncePubKey, formatAddress, serializeNoncePubKey } from '../utils/key';
+import { deserializeNoncePubKey, encryptReceipts, formatAddress, serializeNoncePubKey, toBase64, toHex } from '../utils/key';
 import QrCodeScanner from '../components/QrCodeScanner';
-// const AWS = require('aws-sdk');
 import { s3 } from '../context/filebase';
-const tweetnacl = require('tweetnacl');
-tweetnacl.util = require('tweetnacl-util');
 
-function Send() {
+interface SendProps {
+    publicKey: Uint8Array;
+    setPublicKey: (publicKey: Uint8Array) => void;
+    nonce: Uint8Array;
+    setNonce: (nonce: Uint8Array) => void;
+}
+
+function Send({ publicKey, setPublicKey, nonce, setNonce }: SendProps) {
     const { db, keyPair } = useHouseManager();
     const { nonce: nonceParam, toPublicKey: publicKeyParam } = useParams()
-    const [publicKey, setPublicKey] = useState<string>(publicKeyParam || '');
-    const [nonce, setNonce] = useState<string>(nonceParam || '');
     const [uploadReceipts, setUploadReceipts] = useState<boolean>(true);
     const [uploadImages, setUploadImages] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (publicKeyParam && nonceParam) {
+            const result = deserializeNoncePubKey(nonceParam, publicKeyParam)
+            setPublicKey(result.publicKey);
+            setNonce(result.nonce);
+        }
+    }, [nonceParam, publicKeyParam])
 
     const exportReceipts = async () => {
         const receipts = await db
@@ -64,17 +74,11 @@ function Send() {
         try {
             setLoading(true);
             if (!nonce || !publicKey) throw new Error('Invalid nonce or public key');
-            const deserializedKey = deserializeNoncePubKey(nonce, publicKey)
-            const encryptedReceipts = tweetnacl.box(
-                tweetnacl.util.decodeUTF8(JSON.stringify(targetReceipts)),
-                deserializedKey.nonce,
-                deserializedKey.publicKey,
-                keyPair.secretKey
-            );
+            const encryptedReceipts = encryptReceipts(targetReceipts, nonce, publicKey, keyPair.secretKey)
 
             const params = {
                 Bucket: 'kakeibo-skynet',
-                Key: accounts[0],
+                Key: toHex(publicKey),
                 ContentType: 'application/json',
                 Body: encryptedReceipts,
                 ACL: 'public-read'
@@ -93,9 +97,9 @@ function Send() {
         <div className="grid m-2">
             <div className="col-12 md:col-12">
                 <QrCodeScanner
-                    nonce={nonceParam}
-                    publicKey={publicKeyParam}
+                    nonce={nonce}
                     setNonce={setNonce}
+                    publicKey={publicKey}
                     setPublicKey={setPublicKey}
                 />
             </div>

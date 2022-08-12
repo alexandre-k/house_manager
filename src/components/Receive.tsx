@@ -7,56 +7,42 @@ import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import QrCode from '../components/QrCode';
 import { useHouseManager, Key } from '../context/db';
-import { formatAddress } from '../utils/key';
-// const Account = require('web3-eth-accounts');
-const AWS = require('aws-sdk');
-// import { web3 } from '../context/crypto';
-// import EthCrypto from 'eth-crypto';
-// const ethUtil = require('ethereumjs-util');
-// const sigUtil = require('@metamask/eth-sig-util');
-const tweetnacl = require('tweetnacl');
-tweetnacl.util = require('tweetnacl-util');
+import { formatAddress, toHex, decryptReceipts } from '../utils/key';
+import { s3 } from '../context/filebase';
+
+interface ReceiveProps {
+    nonce: Uint8Array;
+}
 
 
-function Receive() {
+function Receive({ nonce }: ReceiveProps) {
     const { db, keyPair } = useHouseManager();
     const [fromPublicKey, setFromPublicKey] = useState<string>('');
-    // const [accounts, setAccounts] = useState<string[]>([]);
     const getProviderAddress = async () => {
         try {
-            // const retrievedAccounts = await web3.eth.getAccounts();
-            // setAccounts(retrievedAccounts);
         } catch (error) {
             console.log('[New Receipts] getAccounts: ', error)
         }
     }
 
-    /* useEffect(() => {
-     *     getProviderAddress();
-     * }, []);
-     */
     const downloadData = async () => {
         const params = {
             Bucket: 'kakeibo-skynet',
-            Key: fromPublicKey
+            Key: toHex(keyPair.publicKey)
         };
         // @ts-ignore
         const request = s3.getObject(params, async (err, data) => {
             if (err) alert(err)
             // create default
             const body = data.Body;
-            // decrypt the encrypted message
 
-            const decryptedBody = tweetnacl.box.open(
-                body,
-                keyPair.nonce,
-                fromPublicKey,
-                keyPair.secretKey
-            );
-
-            const receipts = JSON.parse(tweetnacl.util.encodeUTF8(decryptedBody));
+            const decryptedReceipts = decryptReceipts(body, nonce, keyPair.publicKey, keyPair.secretKey);
             try {
-                const receiptId = await db.receipts.bulkAdd(receipts);
+
+                if (!decryptedReceipts) {
+                    throw new Error('Unable to decrypt receipts!');
+                }
+                const receiptId = await db.receipts.bulkAdd(JSON.parse(decryptedReceipts));
             } catch (err) {
                 console.log(err)
                 alert(err)
@@ -69,7 +55,7 @@ function Receive() {
     return (
         <>
             <div className="col-12 md:col-12">
-                {keyPair && <QrCode keyPair={keyPair} />}
+                {keyPair && <QrCode keyPair={keyPair} onClickDownload={() => downloadData()} />}
             </div>
         </>
     )

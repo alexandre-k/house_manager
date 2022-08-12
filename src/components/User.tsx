@@ -4,9 +4,7 @@ import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { Toast } from 'primereact/toast';
 import { useHouseManager, Key } from '../context/db';
-import { formatAddress } from '../utils/key';
-var nacl = require('tweetnacl');
-nacl.util = require('tweetnacl-util');
+import { formatAddress, toHex, toBytes } from '../utils/key';
 
 
 const User = () => {
@@ -17,7 +15,7 @@ const User = () => {
 
     useEffect(() => {
         if (keyPair) {
-            setAccount(Buffer.from(keyPair.publicKey).toString('hex'));
+            setAccount(toHex(keyPair.publicKey));
         }
     }, [keyPair])
 
@@ -31,7 +29,7 @@ const User = () => {
                     return;
                 }
 
-                const publicKey = nacl.util.encodeUTF8(keyPair.publicKey);
+                const publicKey = toBytes(keyPair.publicKey);
                 navigator.clipboard.writeText(publicKey);
                 if (toast.current === null) return
                 // @ts-ignore

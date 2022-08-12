@@ -6,10 +6,11 @@ import { serializeNoncePubKey } from '../utils/key';
 
 type IQrCodeProps = {
     keyPair: KeyPair;
+    onClickDownload: () => void;
 }
 
 
-function QrCode({ keyPair }: IQrCodeProps) {
+function QrCode({ keyPair, onClickDownload }: IQrCodeProps) {
     const { nonce, publicKey } = serializeNoncePubKey(keyPair.nonce, keyPair.publicKey);
     const [created, setCreated] = useState<boolean>(false);
     const canvas = useRef<HTMLElement|null>(document.getElementById('publicKey'));
@@ -81,9 +82,11 @@ function QrCode({ keyPair }: IQrCodeProps) {
             >
             </div>
 
-            <div className="flex flex-grow-1 flex-column justify-content-around" style={{ minHeight: '120px'}}>
+            <div className="flex flex-grow-1 flex-column justify-content-around" style={{ minHeight: '170px'}}>
             <Button label="share nonce" icon="pi pi-copy" onClick={() => onCopy(nonce)} />
             <Button label="share public key" icon="pi pi-copy" onClick={() => onCopy(publicKey)} />
+
+            <Button label="download shared data" icon="pi pi-copy" onClick={() => onClickDownload()} />
             </div>
         </>
     );

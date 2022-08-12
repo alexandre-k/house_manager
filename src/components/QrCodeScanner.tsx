@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-// const Account = require('web3-eth-accounts');
 import { InputText } from 'primereact/inputtext';
 import {Html5QrcodeScanner} from "html5-qrcode"
+import { fromBase64, toBase64 } from '../utils/key';
 
 
 type IQrCodeProps = {
-    nonce: string | undefined;
-    publicKey: string | undefined;
-    setNonce: (nonce: string) => void;
-    setPublicKey: (publicKey: string) => void;
+    nonce: Uint8Array;
+    setNonce: (nonce: Uint8Array) => void;
+    publicKey: Uint8Array;
+    setPublicKey: (publicKey: Uint8Array) => void;
 
 }
 
 
-function QrCodeScanner({ nonce, publicKey, setPublicKey, setNonce }: IQrCodeProps) {
+function QrCodeScanner({ nonce, setNonce, publicKey, setPublicKey }: IQrCodeProps) {
     const [created, setCreated] = useState<boolean>(false);
     const canvas = useRef<HTMLElement|null>(document.getElementById('publicKey'));
 
@@ -44,16 +44,16 @@ function QrCodeScanner({ nonce, publicKey, setPublicKey, setNonce }: IQrCodeProp
             {/* <input type="file" id="qr-input-file" accept="image/*" /> */}
                 <span className="p-float-label">
                     <InputText
-                        value={publicKey}
-                        onChange={(e) => setPublicKey(e.target.value)} />
+                        value={toBase64(publicKey)}
+                        onChange={(e) => setPublicKey(fromBase64(e.target.value))} />
                     <label htmlFor="in">Destination address</label>
                 </span>
             </div>
             <div className="col-12 md:col-12">
                 <span className="p-float-label">
                     <InputText
-                        value={nonce}
-                        onChange={(e) => setNonce(e.target.value)} />
+                        value={toBase64(nonce)}
+                        onChange={(e) => setNonce(fromBase64(e.target.value))} />
                     <label htmlFor="in">Nonce</label>
                 </span>
             </div>
