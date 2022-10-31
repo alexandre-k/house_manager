@@ -29,8 +29,8 @@ function InAppCalendar() {
             .receipts
             .where('date')
             .between(
-                getBeginningMonthDate(date),
-                getEndMonthDate(date)
+                getBeginningMonthDate(dateToUnix(viewDate)),
+                getEndMonthDate(dateToUnix(viewDate))
             )
             .toArray();
         setMonthReceipts(found.length)
