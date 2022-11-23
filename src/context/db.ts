@@ -5,7 +5,7 @@ export interface Receipt {
     amount: number;
     date: number;
     category: string;
-    hash: string;
+    hash: Uint8Array;
     userAddress: string;
     imageBuffer: Uint8Array;
     imageName: string;
@@ -16,7 +16,7 @@ export interface TempReceipt {
     amount: number;
     date: number;
     category: string;
-    hash: string;
+    hash: Uint8Array;
     userAddress: string;
     imageBuffer: Uint8Array;
     imageName: string;

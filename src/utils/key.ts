@@ -59,7 +59,7 @@ export const generateKeyPair= async (db: HouseManager) => {
 
 
 
-export const verifyReceipt = (receipt: HashedReceipt, keyPair: KeyPair) => {
+export const verifyReceipt = async (receipt: HashedReceipt, keyPair: KeyPair) => {
     const targetReceipt = {
         date: receipt.date,
         category: receipt.category,
@@ -68,15 +68,20 @@ export const verifyReceipt = (receipt: HashedReceipt, keyPair: KeyPair) => {
         imageName: receipt.imageName,
         imageType: receipt.imageType
     }
-    const hash = getHash(targetReceipt);
+    const hash = await getHash(targetReceipt);
     const signature = getSignature(keyPair, hash);
     // return EthCrypto.recover(signature, hash);
     return true;
 }
 
-export const getHash = (receipt: HashedReceipt) => {
-    return hash(decodeUTF8(JSON.stringify(receipt)));
-}
+export const getHash = (receipt: HashedReceipt) =>
+    hash(decodeUTF8(JSON.stringify(receipt)));
+
+export const arrayToHex = (arr: Uint8Array) =>
+    Array.from(arr).map((b: number) => b.toString(16).padStart(2, "0")).join("");
+
+// export const getHash = async (receipt: HashedReceipt): Promise<ArrayBuffer> =>
+//     await Hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(receipt))))
 
 export const toBytes = (decodedMessage: Uint8Array): string => encodeUTF8(decodedMessage);
 
