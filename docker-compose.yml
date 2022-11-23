@@ -16,3 +16,16 @@ services:
       - REACT_APP_SUPABASE_URL=${SUPABASE_URL}
       - REACT_APP_SUPABASE_API_KEY=${SUPABASE_API_KEY}
 
+  gateway:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./infra/nginx/certs:/etc/nginx/certs
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d
+        #- ./data/certbot/conf:/etc/letsencrypt
+        #- ./data/certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+
