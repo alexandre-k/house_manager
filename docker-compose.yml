@@ -2,7 +2,7 @@ version: "3.2"
 services:
   web:
     hostname: uchinokakeibo
-    container-name: kakeibo
+    container_name: kakeibo
     build:
       context: .
     ports:
