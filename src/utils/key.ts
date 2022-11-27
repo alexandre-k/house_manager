@@ -2,11 +2,12 @@ import { box, hash, randomBytes, sign } from 'tweetnacl';
 import { decodeBase64, encodeBase64, encodeUTF8, decodeUTF8 } from 'tweetnacl-util';
 import { HouseManager, KeyPair, Receipt } from '../context/db';
 
+
 export type HashedReceipt = {
     amount: number;
     date: number;
     category: string;
-    userAddress: string;
+    publicKey: string;
     imageName: string;
     imageType: string;
 }
@@ -64,7 +65,7 @@ export const verifyReceipt = async (receipt: HashedReceipt, keyPair: KeyPair) =>
         date: receipt.date,
         category: receipt.category,
         amount: receipt.amount,
-        userAddress: receipt.userAddress,
+        publicKey: receipt.publicKey,
         imageName: receipt.imageName,
         imageType: receipt.imageType
     }

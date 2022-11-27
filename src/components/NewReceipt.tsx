@@ -1,18 +1,20 @@
 import react, { useState } from 'react';
 import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
+// import { Divider } from 'primereact/divider';
 import { Dropdown } from 'primereact/dropdown';
-import { Card } from 'primereact/card';
+// import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { InputNumber } from 'primereact/inputnumber';
 import { expenditureTypes, expenditureColors } from '../utils/categories'
 // @ts-ignore
-import browserImageSize from 'browser-image-size'
+// import browserImageSize from 'browser-image-size'
 // @ts-ignore
-import { readAndCompressImage } from 'browser-image-resizer'
-import { Buckets, PushPathResult, KeyInfo, PrivateKey, WithKeyInfoOptions } from '@textile/hub'
-import { useHouseManager } from '../context/db';
-import { getHash } from '../utils/key';
+// import { readAndCompressImage } from 'browser-image-resizer'
+// import { Buckets, PushPathResult, KeyInfo, PrivateKey, WithKeyInfoOptions } from '@textile/hub'
+import { useHouseManager, Receipt } from '../context/db';
+import { getHash, arrayToHex } from '../utils/key';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 
 type INewReceiptProps = {
     date: number,
@@ -24,32 +26,41 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const [price, setPrice] = useState<number | null>(null);
     const [category, setCategory] = useState(expenditureTypes[0]);
     const [imageName, setImageName] = useState('');
-    const [imageBuffer, setImageBuffer] = useState(new Uint8Array());
+    const [imageDataUrl, setImageDataURL] = useState("");
     const [imageType, setImageType] = useState('');
     const [imageSize, setImageSize] = useState(0);
     const [accounts, setAccounts] = useState<string[]>([]);
     const labeledCategories = expenditureTypes.map(e => Object.assign({}, {label: e, value: e }));
+    const mutation = useMutation({
+        mutationFn: (newReceipt: Object) => {
+            return fetch('/api/receipts', {
+                method: "POST",
+                body: JSON.stringify(newReceipt)
+            })
+        }
+    })
 
-    const readFile = (file: File): Promise<ArrayBuffer | null> => {
+
+    const readFile = (file: File): Promise<string | null> => {
         return new Promise((resolve, reject) => {
             let reader = new FileReader();
-            reader.addEventListener('loadend', e => resolve(e!.target!.result as ArrayBuffer));
+            reader.addEventListener('loadend', e => resolve(e!.target!.result as string));
             reader.addEventListener('error', reject);
-            reader.readAsArrayBuffer(file);
+            reader.readAsDataURL(file);
         });
     }
 
     const onSelect = async (event: any) => {
         const files = Array.from(event.files);
         const image = files[0] as File;
-        const imageContent = await readFile(image);
-        if (!imageContent) {
+        const dataURL = await readFile(image);
+        if (!dataURL) {
             console.log('Failed reading file ', files[0])
             return;
         }
-        const buffer = new Uint8Array(imageContent);
+        // const buffer = new Uint8Array(imageContent);
         setImageName(image.name);
-        setImageBuffer(buffer);
+        setImageDataURL(dataURL);
         setImageType(image.type);
         setImageSize(image.size);
     }
@@ -60,18 +71,25 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             date,
             category,
             amount: price,
-            userAddress: accounts.length > 0 ? accounts[0] : '',
+            publicKey: accounts.length > 0 ? accounts[0] : '',
             imageName,
             imageType
         }
 
-        const hash = getHash(targetReceipt);
+        const hash = arrayToHex(getHash(targetReceipt));
+        console.log(targetReceipt)
         try {
-            const receiptId = await db.receipts.add({
-                ...targetReceipt,
-                imageBuffer: imageBuffer,
+
+            mutation.mutate({
+                date: targetReceipt.date,
+                amount: targetReceipt.amount,
+                category: targetReceipt.category,
+                public_key: targetReceipt.publicKey,
+                image_name: targetReceipt.imageName,
+                image_type: targetReceipt.imageType,
+                image_data_url: imageDataUrl,
                 hash,
-            });
+            })
         } catch (err) {
             console.log(err)
             alert(err)

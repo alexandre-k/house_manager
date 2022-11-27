@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 COPY package.json ./
 COPY yarn.lock ./
 RUN apk --no-cache add git
-RUN yarn install
+RUN yarn
 
 COPY . .
 

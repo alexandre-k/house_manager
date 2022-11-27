@@ -1,38 +1,72 @@
 version: "3.2"
 services:
-  web:
-    hostname: uchinokakeibo
+  backend:
+    hostname: api
+    container_name: backend
+    build: ./backend
+    environment:
+      - GIN_MODE=debug
+      - SUPABASE_URL=$SUPABASE_URL
+      - SUPABASE_API_KEY=$SUPABASE_API_KEY
+    ports:
+      - 3001:3001
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+    networks:
+      - reverse_proxy
+
+  frontend:
+    hostname: app
     container_name: kakeibo
     build:
       context: .
     ports:
-      - "3000:3000"
+      - 3000:3000
     volumes:
       - /usr/src/app/node_modules
       - .:/usr/src/app
     environment:
       - REACT_APP_FILEBASE_ACCESS_ID=$FILEBASE_ACCESS_KEY_ID
       - REACT_APP_FILEBASE_SECRET_ACCESS_KEY=$FILEBASE_SECRET_ACCESS_KEY
-      - REACT_APP_SUPABASE_URL=${SUPABASE_URL}
       - REACT_APP_SUPABASE_API_KEY=${SUPABASE_API_KEY}
+    depends_on:
+      - backend
     networks:
-      - kakeibo
+      - reverse_proxy
 
   gateway:
     image: nginx:alpine
-    restart: unless-stopped
+    # restart: unless-stopped
     volumes:
-      - ./infra/nginx/certs:/etc/nginx/certs
       - ./infra/nginx/conf.d:/etc/nginx/conf.d
+      - ./infra/nginx/certs:/etc/letsencrypt
         #- ./data/certbot/conf:/etc/letsencrypt
         #- ./data/certbot/www:/var/www/certbot
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
     networks:
-      - kakeibo
+      - reverse_proxy
+    depends_on:
+      - frontend
+      - backend
+
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - 6739:6739
+    command: redis-server --save 20 1 --loglevel warning --requirepass TSK5jMmPVU35Gi3FBjyE9J868JutGpzbRrwTa6oemPWW4nX9T2
+    volumes:
+      - cache:/data
+
 networks:
-  kakeibo:
+  reverse_proxy:
     driver: bridge
+
+volumes:
+  cache:
+    driver: local
 

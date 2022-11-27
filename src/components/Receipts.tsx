@@ -1,17 +1,14 @@
 import react, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
 import { Image } from 'primereact/image';
 import { Card } from 'primereact/card';
-import { getTimestamp } from '../utils/date';
 import { categoryColors } from '../utils/categories';
-import { formatAddress, HashedReceipt } from '../utils/key';
-import { KeyPair, useHouseManager, Receipt } from '../context/db';
+import { formatAddress } from '../utils/key';
+import { KeyPair, useHouseManager } from '../context/db';
 const accounting = require("accounting");
-import { DisplayedReceipt } from '../types/receipts';
+import { DisplayedReceipt, RawReceipt } from '../types/receipts';
 import AddReceiptButton from '../components/AddReceiptBtn';
+import { useQuery } from '@tanstack/react-query';
 
 
 type Props = {
@@ -22,27 +19,39 @@ type Props = {
 }
 
 function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }: Props) {
-    const { db, date, keyPair } = useHouseManager();
-    const navigate = useNavigate();
-    useEffect(() => {
+    const { date, keyPair } = useHouseManager();
 
-        const allReceipts = async () => {
-            if (!date) return []
-            const result = await db
-                .receipts
-                .where('date')
-                .between(date, date + 24 * 60 * 60)
-                .toArray();
-            if (!result) return []
-            const found: DisplayedReceipt[] = result.map((r: Receipt) => {
-                const blob = new Blob([r.imageBuffer], { 'type': r.imageType })
-                const url = URL.createObjectURL(blob);
-                return { ...r, dataUrl: url };
+    const minDate = date;
+    const maxDate = date + 24 * 60 * 60;
+
+    const { isLoading, error, data } = useQuery({
+        queryKey: ['receipts', {
+            minDate: minDate.toString(),
+            maxDate: maxDate.toString()
+        }],
+        queryFn: () =>
+            fetch('/api/receipts?' + new URLSearchParams({
+                minDate: minDate.toString(), maxDate: maxDate.toString()
+                }).toString()).then(async res => {
+                    const { data } = await res.json()
+                    if (!data) return []
+                    const found: DisplayedReceipt[] = data.map((r: RawReceipt) => {
+                        return {
+                            date: r.date,
+                            amount: r.amount,
+                            category: r.category,
+                            hash: r.hash,
+                            imageDataUrl: r.image_data_url,
+                            imageName: r.image_name,
+                            imageType: r.image_type,
+                            publicKey: r.public_key,
+                        }
+                    })
+                    setReceipts(found)
+                    return data
             })
-            setReceipts(found)
-        }
-        if (!isAddingReceipt) allReceipts()
-    }, [isAddingReceipt])
+    });
+
     const header = (receipt: DisplayedReceipt) => {
         return (
             <div className="p-col-12 grid p-fluid p-jc-between">
@@ -50,8 +59,9 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
                     icon="pi pi-times"
                     className="p-button-rounded p-button-danger m-1"
                     onClick={() => {
-                        db.receipts.where({ hash: receipt.hash }).delete()
-                        setReceipts(receipts.filter(r => r.hash !== receipt.hash))
+                        console.log('TODO: remove receipt')
+                        // db.receipts.where({ hash: receipt.hash }).delete()
+                        // setReceipts(receipts.filter(r => r.hash !== receipt.hash))
                     }} />
             <Button
                 icon="pi pi-pencil"
@@ -75,8 +85,9 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
 
 
     const receiptDataUrl = (receipt: DisplayedReceipt) => {
-        if (receipt.imageBuffer && receipt.imageBuffer.length > 0) {
-            return receipt.dataUrl;
+        console.log('RECEIPT > ', receipt)
+        if (receipt.imageDataUrl && receipt.imageDataUrl.length > 0) {
+            return receipt.imageDataUrl;
         } else {
             return '/images/' + receipt.category + '.jpg';
         }

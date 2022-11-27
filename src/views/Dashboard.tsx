@@ -8,6 +8,8 @@ import { categoryColors, categoryHoverColors } from '../utils/categories';
 import { getBeginningMonthDate, getEndMonthDate, formatMonth } from '../utils/date';
 import './Calendar.css';
 const accounting = require("accounting");
+import { useQuery } from '@tanstack/react-query';
+
 
 function Dashboard() {
     const { db, date, setDate } = useHouseManager();
@@ -18,25 +20,46 @@ function Dashboard() {
     const [hoverBackgroundColor, setHoverBackgroundColor] = useState<string[]>([])
     const [total, setTotal] = useState<number>(0);
     const { t, i18n } = useTranslation();
+    const minDate = getBeginningMonthDate(date);
+    const maxDate = getEndMonthDate(date);
 
-    useEffect(() => {
-        if (date) {
-            const allReceipts = async () => {
-                const receipts = await db
-                    .receipts
-                    .where('date')
-                    .between(
-                        getBeginningMonthDate(date),
-                        getEndMonthDate(date)
-                    )
-                    .toArray();
-                if (!receipts) return [];
-                setExpenditureByCategory(receipts)
+    const { isLoading, error, data: receipts } = useQuery({
+        queryKey: ['receipts', {
+            minDate: minDate.toString(),
+            maxDate: maxDate.toString()
+        }],
+        queryFn: () =>
+            fetch('http://app.localhost/api/receipts?' + new URLSearchParams({
+                minDate: minDate.toString(), maxDate: maxDate.toString()
+                }).toString()).then(async res => {
+                    const { data: receipts } = await res.json()
+                    // Make a request
+                    if (!receipts) return []
+                    setExpenditureByCategory(receipts)
+                    return receipts
+            })
+    });
 
-            }
-            allReceipts()
-        }
-    }, [date])
+
+    /* 
+    *     useEffect(() => {
+    *         if (date) {
+    *             const allReceipts = async () => {
+    *                 const receipts = await db
+    *                     .receipts
+    *                     .where('date')
+    *                     .between(
+    *                         getBeginningMonthDate(date),
+    *                         getEndMonthDate(date)
+    *                     )
+    *                     .toArray();
+    *                 if (!receipts) return [];
+    *                 setExpenditureByCategory(receipts)
+    * 
+    *             }
+    *             allReceipts()
+    *         }
+    *     }, [date]) */
     const setExpenditureByCategory = (receipts: Receipt[]) => {
         const categories: string[] = []
         const amountsPerCategory: Record<string, number> = {}

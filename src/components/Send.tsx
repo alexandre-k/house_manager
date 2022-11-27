@@ -48,13 +48,13 @@ function Send({ publicKey, setPublicKey, nonce, setNonce }: SendProps) {
                     amount: r.amount,
                     date: r.date,
                     category: r.category,
-                    userAddress: r.userAddress
+                    publicKey: r.publicKey
                 }
             } else if (!uploadReceipts && uploadImages) {
                 return {
                     hash: r.hash,
-                    userAddress: r.userAddress,
-                    imageBuffer: r.imageBuffer,
+                    publicKey: r.publicKey,
+                    imageDataUrl: r.imageDataUrl,
                     imageName: r.imageName,
                     imageType: r.imageType
                 }
@@ -64,8 +64,8 @@ function Send({ publicKey, setPublicKey, nonce, setNonce }: SendProps) {
                     date: r.date,
                     category: r.category,
                     hash: r.hash,
-                    userAddress: r.userAddress,
-                    imageBuffer: r.imageBuffer,
+                    publicKey: r.publicKey,
+                    imageDataUrl: r.imageDataUrl,
                     imageName: r.imageName,
                     imageType: r.imageType
                 }

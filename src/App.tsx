@@ -24,6 +24,11 @@ import { getUnixTimestamp } from './utils/date';
 import Share from './components/Share';
 import User from './components/User';
 import { generateKeyPair } from './utils/key';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+
+const queryClient = new QueryClient()
+
 // import { Account } from 'web3-core'
 // import { ethers, providers } from 'ethers';
 // import Web3Moal from 'web3modal';
@@ -93,27 +98,29 @@ function App() {
     const [activeIndex, setActiveIndex] = useState(index === -1 ? 0 : index);
 
         return (
-            <HouseManagerContext.Provider value={{ db, keyPair, date, setDate }}>
-            <Toolbar
-                className="pt-1"
-                style={toolBarStyle}
-                right={user}
-            />
-            <div className="flex align-items-center" id="content">
-                <Routes>
-            {routes.map((route, idx) => <Route key={idx} path={route.path} element={route.element}/>)}
-                    <Route
-                        path="*"
-                        element={<Navigate to="/calendar" replace />} />
-                </Routes>
-            </div>
-            <TabMenu
-                id="tabMenu"
-                model={navigationRoutes}
-                activeIndex={activeIndex}
-                onTabChange={(e => setActiveIndex(e.index) )}
-            />
-            </HouseManagerContext.Provider>
+            <QueryClientProvider client={queryClient}>
+                <HouseManagerContext.Provider value={{ db, keyPair, date, setDate }}>
+                    <Toolbar
+                        className="pt-1"
+                        style={toolBarStyle}
+                        right={user}
+                    />
+                    <div className="flex align-items-center" id="content">
+                        <Routes>
+                            {routes.map((route, idx) => <Route key={idx} path={route.path} element={route.element}/>)}
+                            <Route
+                                path="*"
+                                element={<Navigate to="/calendar" replace />} />
+                        </Routes>
+                    </div>
+                    <TabMenu
+                        id="tabMenu"
+                        model={navigationRoutes}
+                        activeIndex={activeIndex}
+                        onTabChange={(e => setActiveIndex(e.index) )}
+                    />
+                </HouseManagerContext.Provider>
+            </QueryClientProvider>
     );
 }
 

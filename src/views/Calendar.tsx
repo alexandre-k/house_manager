@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Badge } from 'primereact/badge';
 import { Calendar } from 'primereact/calendar';
-import { createClient } from '@supabase/supabase-js';
 import './Calendar.css';
 import { arrayToHex, getHash, getSignature } from '../utils/key';
 import { dateToUnix, getBeginningMonthDate, getEndMonthDate, getDay, getMonth, unixToDate } from '../utils/date';
 import { useHouseManager, Receipt } from '../context/db';
+import { useQuery } from '@tanstack/react-query';
+
+
 
 type CalendarDate = {
     day: number;
@@ -23,8 +25,38 @@ function InAppCalendar() {
     const today = unixToDate(date);
     const [monthReceipts, setMonthReceipts] = useState(0);
     const [receipts, setReceipts] = useState<Record<string, Receipt[]>>({});
-    const [receiptsByDate, setReceiptsByDate] = useState<Record<string, Receipt[]>>({});
     const [viewDate, setViewDate] = useState(new Date(today));
+
+    const minDate = getBeginningMonthDate(dateToUnix(viewDate));
+    const maxDate = getEndMonthDate(dateToUnix(viewDate));
+
+    const { isLoading, error, data } = useQuery({
+        queryKey: ['receipts', {
+            minDate: minDate.toString(),
+            maxDate: maxDate.toString()
+        }],
+        queryFn: () =>
+            fetch('http://app.localhost/api/receipts?' + new URLSearchParams({
+                minDate: minDate.toString(), maxDate: maxDate.toString()
+                }).toString()).then(async res => {
+                    const { data } = await res.json()
+                    setMonthReceipts(data.length)
+
+                    // Make a request
+                    if (!data) return
+                    const receiptsByDay: Record<string, Receipt[]> = {};
+                    data.forEach((receipt: Receipt) => {
+                        const day = getDay(receipt.date);
+                        if (!receiptsByDay[day]) receiptsByDay[day] = [];
+                        // @ts-ignore
+                        receiptsByDay[day].push(receipt);
+                    });
+                    setReceipts(receiptsByDay);
+                    return data
+            })
+    });
+
+
     const allReceipts = async () => {
         const found = await db
             .receipts
@@ -36,11 +68,6 @@ function InAppCalendar() {
             .toArray();
         setMonthReceipts(found.length)
 
-        // Initialize the JS client
-        const supabase = createClient(process.env.REACT_APP_SUPABASE_URL || "", process.env.REACT_APP_SUPABASE_API_KEY || "")
-        let { data: receipts } = await supabase
-            .from('receipts')
-            .select('*')
         if (keyPair) {
             const receipts_to_db = found.map((receipt: Receipt) => {
                 const receiptHash = getHash(receipt);
@@ -53,26 +80,9 @@ function InAppCalendar() {
                     "ownership_proof": ""
                 }
             })
-        const { data, error } = await supabase
-            .from('receipts')
-            .insert(receipts_to_db)
         }
 
-        // Make a request
-        if (!found) return []
-        const receiptsByDay: Record<string, Receipt[]> = {};
-        found.forEach((receipt: Receipt) => {
-            const day = getDay(receipt.date);
-            if (!receiptsByDay[day]) receiptsByDay[day] = [];
-            // @ts-ignore
-            receiptsByDay[day].push(receipt);
-        });
-        setReceipts(receiptsByDay);
     }
-    useEffect(() => {
-        allReceipts()
-    }, [viewDate])
-
     const dateTemplate = (d: CalendarDate) => {
         if (receipts[d.day] !== undefined && getMonth(date) === d.month) {
             return (
