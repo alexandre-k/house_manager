@@ -36,7 +36,7 @@ function InAppCalendar() {
             maxDate: maxDate.toString()
         }],
         queryFn: () =>
-            fetch('http://app.localhost/api/receipts?' + new URLSearchParams({
+            fetch('/api/receipts?' + new URLSearchParams({
                 minDate: minDate.toString(), maxDate: maxDate.toString()
                 }).toString()).then(async res => {
                     const { data } = await res.json()

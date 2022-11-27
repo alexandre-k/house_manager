@@ -29,7 +29,7 @@ function Dashboard() {
             maxDate: maxDate.toString()
         }],
         queryFn: () =>
-            fetch('http://app.localhost/api/receipts?' + new URLSearchParams({
+            fetch('/api/receipts?' + new URLSearchParams({
                 minDate: minDate.toString(), maxDate: maxDate.toString()
                 }).toString()).then(async res => {
                     const { data: receipts } = await res.json()
@@ -40,26 +40,6 @@ function Dashboard() {
             })
     });
 
-
-    /* 
-    *     useEffect(() => {
-    *         if (date) {
-    *             const allReceipts = async () => {
-    *                 const receipts = await db
-    *                     .receipts
-    *                     .where('date')
-    *                     .between(
-    *                         getBeginningMonthDate(date),
-    *                         getEndMonthDate(date)
-    *                     )
-    *                     .toArray();
-    *                 if (!receipts) return [];
-    *                 setExpenditureByCategory(receipts)
-    * 
-    *             }
-    *             allReceipts()
-    *         }
-    *     }, [date]) */
     const setExpenditureByCategory = (receipts: Receipt[]) => {
         const categories: string[] = []
         const amountsPerCategory: Record<string, number> = {}
