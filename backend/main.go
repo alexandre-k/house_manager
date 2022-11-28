@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"encoding/json"
+	"path/filepath"
 	"math/big"
 	"fmt"
 	"net/http"
@@ -39,7 +40,6 @@ func GetReceipts(context *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("receipts: ", receipts)
 
 	context.JSON(http.StatusOK, gin.H{"data": receipts})
 }
@@ -76,13 +76,31 @@ func CreateReceipt(context *gin.Context) {
 // 	context.JSON(http.StatusCreated, gin.H{"message": "ok"})
 // }
 
+
+func UploadImage(context *gin.Context) {
+	image, _ := context.FormFile("image")
+	date, _ := context.GetPostForm("date")
+
+	dst := filepath.Join("static", date + "_" + filepath.Base(image.Filename))
+
+	context.SaveUploadedFile(image, dst)
+	context.String(http.StatusCreated, fmt.Sprintf("'%s uploaded!", image.Filename))
+
+}
+
 func main() {
 	router := gin.Default()
+
+	// settings for UploadImage
+	router.MaxMultipartMemory = 15 << 20 // 15 MiB max size for pictures
+	router.Static("/public", "./public")
+
 	router.GET("/health", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"ok": true })
 	})
 
 	router.GET("/api/receipts", GetReceipts)
 	router.POST("/api/receipts", CreateReceipt)
+	router.POST("/api/upload", UploadImage)
 	router.Run(":3001")
 }

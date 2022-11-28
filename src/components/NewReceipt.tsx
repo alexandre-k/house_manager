@@ -5,6 +5,7 @@ import { Dropdown } from 'primereact/dropdown';
 // import { Card } from 'primereact/card';
 import { FileUpload } from 'primereact/fileupload';
 import { InputNumber } from 'primereact/inputnumber';
+import { getDate } from '../utils/date';
 import { expenditureTypes, expenditureColors } from '../utils/categories'
 // @ts-ignore
 // import browserImageSize from 'browser-image-size'
@@ -26,7 +27,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const [price, setPrice] = useState<number | null>(null);
     const [category, setCategory] = useState(expenditureTypes[0]);
     const [imageName, setImageName] = useState('');
-    const [imageDataUrl, setImageDataURL] = useState("");
+    const [imageArrayBuffer, setImageArrayBuffer] = useState<ArrayBuffer | null>(null);
     const [imageType, setImageType] = useState('');
     const [imageSize, setImageSize] = useState(0);
     const [accounts, setAccounts] = useState<string[]>([]);
@@ -40,27 +41,40 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
         }
     })
 
+    const upload = useMutation({
+        mutationFn: (newImage: File) => {
+            const formData = new FormData();
+            const dDate = getDate(date)
+            formData.append("date", dDate.format("YYYYMMDD"))
+            formData.append("image", newImage);
+            return fetch('/api/upload', {
+                method: "POST",
+                body: formData,
+            })
+        }
+    })
 
-    const readFile = (file: File): Promise<string | null> => {
+    const readFile = (file: File): Promise<ArrayBuffer | null> => {
         return new Promise((resolve, reject) => {
             let reader = new FileReader();
-            reader.addEventListener('loadend', e => resolve(e!.target!.result as string));
+            reader.addEventListener('loadend', e => resolve(e!.target!.result as ArrayBuffer));
             reader.addEventListener('error', reject);
-            reader.readAsDataURL(file);
+            reader.readAsArrayBuffer(file);
         });
     }
 
     const onSelect = async (event: any) => {
         const files = Array.from(event.files);
         const image = files[0] as File;
-        const dataURL = await readFile(image);
-        if (!dataURL) {
+        upload.mutate(image)
+        const arrayBuffer = await readFile(image);
+        if (!arrayBuffer) {
             console.log('Failed reading file ', files[0])
             return;
         }
         // const buffer = new Uint8Array(imageContent);
         setImageName(image.name);
-        setImageDataURL(dataURL);
+        setImageArrayBuffer(arrayBuffer);
         setImageType(image.type);
         setImageSize(image.size);
     }
@@ -87,7 +101,6 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
                 public_key: targetReceipt.publicKey,
                 image_name: targetReceipt.imageName,
                 image_type: targetReceipt.imageType,
-                image_data_url: imageDataUrl,
                 hash,
             })
         } catch (err) {

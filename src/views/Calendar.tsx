@@ -53,36 +53,25 @@ function InAppCalendar() {
                     });
                     setReceipts(receiptsByDay);
                     return data
-            })
+            }),
+        enabled: !!keyPair
     });
+    /* if (keyPair) {
+*     const receipts_to_db = found.map((receipt: Receipt) => {
+*         const receiptHash = getHash(receipt);
+*         return {
+*             "amount": receipt.amount,
+*             "category": receipt.category,
+*             "date": receipt.date,
+*             "hash": arrayToHex(receiptHash),
+*             "public_key": arrayToHex(keyPair.publicKey),
+*             "ownership_proof": ""
+*         }
+*     })
+* } */
 
 
-    const allReceipts = async () => {
-        const found = await db
-            .receipts
-            .where('date')
-            .between(
-                getBeginningMonthDate(dateToUnix(viewDate)),
-                getEndMonthDate(dateToUnix(viewDate))
-            )
-            .toArray();
-        setMonthReceipts(found.length)
 
-        if (keyPair) {
-            const receipts_to_db = found.map((receipt: Receipt) => {
-                const receiptHash = getHash(receipt);
-                return {
-                    "amount": receipt.amount,
-                    "category": receipt.category,
-                    "date": receipt.date,
-                    "hash": arrayToHex(receiptHash),
-                    "public_key": arrayToHex(keyPair.publicKey),
-                    "ownership_proof": ""
-                }
-            })
-        }
-
-    }
     const dateTemplate = (d: CalendarDate) => {
         if (receipts[d.day] !== undefined && getMonth(date) === d.month) {
             return (
