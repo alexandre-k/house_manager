@@ -31,7 +31,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const [imageType, setImageType] = useState('');
     const [imageSize, setImageSize] = useState(0);
     const labeledCategories = expenditureTypes.map(e => Object.assign({}, {label: e, value: e }));
-    
+
     const queryClient = useQueryClient()
 
     const mutation = useMutation({
@@ -40,7 +40,10 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
                 method: "POST",
                 body: JSON.stringify(newReceipt)
             })
-        }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['dayReceipts'] })
+        },
     })
 
     const upload = useMutation({
@@ -105,7 +108,6 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
                 imageType: targetReceipt.imageType,
                 hash,
             })
-            queryClient.invalidateQueries({ queryKey: ['day-receipts'] })
         } catch (err) {
             console.log(err)
             alert(err)

@@ -26,7 +26,7 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
     const maxDate = date + 24 * 60 * 60;
 
     const { isLoading, error, data } = useQuery({
-        queryKey: ['day-receipts'],
+        queryKey: ['dayReceipts'],
         queryFn: () =>
             fetch('/api/receipts?' + new URLSearchParams({
                 minDate: minDate.toString(), maxDate: maxDate.toString(), publicKey: arrayToHex(keyPair.publicKey)
