@@ -35,10 +35,7 @@ function InAppCalendar() {
             minDate: minDate.toString(),
             maxDate: maxDate.toString()
         }],
-        queryFn: () =>
-            fetch('/api/receipts?' + new URLSearchParams({
-                minDate: minDate.toString(), maxDate: maxDate.toString()
-                }).toString()).then(async res => {
+        queryFn: () => fetch(`/api/receipts?minDate=${minDate}&maxDate=${maxDate}&publicKey=${arrayToHex(keyPair.publicKey)}`).then(async res => {
                     const { data } = await res.json()
                     setMonthReceipts(data.length)
 
@@ -47,6 +44,7 @@ function InAppCalendar() {
                     const receiptsByDay: Record<string, Receipt[]> = {};
                     data.forEach((receipt: Receipt) => {
                         const day = getDay(receipt.date);
+
                         if (!receiptsByDay[day]) receiptsByDay[day] = [];
                         // @ts-ignore
                         receiptsByDay[day].push(receipt);
@@ -54,7 +52,7 @@ function InAppCalendar() {
                     setReceipts(receiptsByDay);
                     return data
             }),
-        enabled: !!keyPair
+        enabled: !!keyPair && !!keyPair.publicKey
     });
     /* if (keyPair) {
 *     const receipts_to_db = found.map((receipt: Receipt) => {

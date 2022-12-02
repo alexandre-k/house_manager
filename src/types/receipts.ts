@@ -11,11 +11,10 @@ export type DisplayedReceipt = {
 
 export type RawReceipt = {
     hash: string;
-    image_data_url: string;
     amount: number;
     date: number;
     category: string;
-    public_key: string;
-    image_name: string;
-    image_type: string;
+    publicKey: string;
+    imageName: string;
+    imageType: string;
 }

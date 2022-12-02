@@ -46,6 +46,8 @@ export const getUnixTimestamp = () => dayjs().unix();
 
 export const displayDate = (date: dayjs.Dayjs) => date.format('DD/MM/YYYY');
 
+export const getImagePrefix = (date: dayjs.Dayjs) => date.format('YYYYMMDD');
+
 export const getBeginningMonthDate = (timestamp: number) =>
     getDate(timestamp).startOf('month').unix();
 

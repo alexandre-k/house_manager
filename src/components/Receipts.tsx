@@ -2,8 +2,9 @@ import react, { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Image } from 'primereact/image';
 import { Card } from 'primereact/card';
+import { getDate, getImagePrefix } from '../utils/date';
 import { categoryColors } from '../utils/categories';
-import { formatAddress } from '../utils/key';
+import { arrayToHex, formatAddress } from '../utils/key';
 import { KeyPair, useHouseManager } from '../context/db';
 const accounting = require("accounting");
 import { DisplayedReceipt, RawReceipt } from '../types/receipts';
@@ -25,13 +26,10 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
     const maxDate = date + 24 * 60 * 60;
 
     const { isLoading, error, data } = useQuery({
-        queryKey: ['receipts', {
-            minDate: minDate.toString(),
-            maxDate: maxDate.toString()
-        }],
+        queryKey: ['day-receipts'],
         queryFn: () =>
             fetch('/api/receipts?' + new URLSearchParams({
-                minDate: minDate.toString(), maxDate: maxDate.toString()
+                minDate: minDate.toString(), maxDate: maxDate.toString(), publicKey: arrayToHex(keyPair.publicKey)
                 }).toString()).then(async res => {
                     const { data } = await res.json()
                     if (!data) return []
@@ -41,10 +39,9 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
                             amount: r.amount,
                             category: r.category,
                             hash: r.hash,
-                            imageDataUrl: r.image_data_url,
-                            imageName: r.image_name,
-                            imageType: r.image_type,
-                            publicKey: r.public_key,
+                            imageName: r.imageName,
+                            imageType: r.imageType,
+                            publicKey: r.publicKey,
                         }
                     })
                     setReceipts(found)
@@ -85,9 +82,8 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
 
 
     const receiptDataUrl = (receipt: DisplayedReceipt) => {
-        console.log('RECEIPT > ', receipt)
-        if (receipt.imageDataUrl && receipt.imageDataUrl.length > 0) {
-            return receipt.imageDataUrl;
+        if (receipt.imageName != undefined) {
+            return '/public/' + getImagePrefix(getDate(date)) + '_' + receipt.imageName;
         } else {
             return '/images/' + receipt.category + '.jpg';
         }

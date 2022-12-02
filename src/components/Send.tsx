@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { TabView, TabPanel } from 'primereact/tabview';
+import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
-import { Checkbox } from 'primereact/checkbox';
-import QrCode from '../components/QrCode';
-import { useHouseManager, Key, Receipt } from '../context/db';
-import { deserializeNoncePubKey, encryptReceipts, formatAddress, serializeNoncePubKey, toBase64, toHex } from '../utils/key';
-import QrCodeScanner from '../components/QrCodeScanner';
+import { useHouseManager, Receipt } from '../context/db';
+import { arrayToHex, deserializeNoncePubKey, encryptReceipts, toHex } from '../utils/key';
 import { s3 } from '../context/filebase';
+import { useMutation } from "@tanstack/react-query";
 
 interface SendProps {
     publicKey: Uint8Array;
@@ -23,7 +22,16 @@ function Send({ publicKey, setPublicKey, nonce, setNonce }: SendProps) {
     const [uploadReceipts, setUploadReceipts] = useState<boolean>(true);
     const [uploadImages, setUploadImages] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
+    const [friendPublicKey, setFriendPublicKey] = useState("");
     const [accounts, setAccounts] = useState<string[]>([]);
+    const mutation = useMutation({
+        mutationFn: (keys: object) => {
+            return fetch('/api/share', {
+                method: "POST",
+                body: JSON.stringify(keys)
+            })
+        }
+    })
 
     useEffect(() => {
         if (publicKeyParam && nonceParam) {
@@ -96,12 +104,16 @@ function Send({ publicKey, setPublicKey, nonce, setNonce }: SendProps) {
     return (
         <div className="grid m-2">
             <div className="col-12 md:col-12">
-                <QrCodeScanner
-                    nonce={nonce}
-                    setNonce={setNonce}
-                    publicKey={publicKey}
-                    setPublicKey={setPublicKey}
-                />
+                <div className="col-12 md:col-12">
+                    {/* <div id="reader" style={{ width: "600px" }}></div> */}
+                    {/* <input type="file" id="qr-input-file" accept="image/*" /> */}
+                    <span className="p-float-label">
+                        <InputText
+                            value={friendPublicKey}
+                            onChange={(e: any) => setFriendPublicKey(e.target.value)} />
+                        <label htmlFor="in">Destination address</label>
+                    </span>
+                </div>
             </div>
         <div
         className="flex align-content-center justify-content-center col-12 md:col-12">
@@ -109,7 +121,10 @@ function Send({ publicKey, setPublicKey, nonce, setNonce }: SendProps) {
                     className="p-button-rounded p-button-secondary"
                     icon="pi pi-send"
                     loading={loading}
-                    onClick={exportReceipts} />
+                    onClick={() => mutation.mutate({
+                        friendPublicKey,
+                        ownerPublicKey: arrayToHex(keyPair.publicKey)})
+                    } />
              </div>
         </div>
     )

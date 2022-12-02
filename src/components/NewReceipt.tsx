@@ -30,8 +30,10 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const [imageArrayBuffer, setImageArrayBuffer] = useState<ArrayBuffer | null>(null);
     const [imageType, setImageType] = useState('');
     const [imageSize, setImageSize] = useState(0);
-    const [accounts, setAccounts] = useState<string[]>([]);
     const labeledCategories = expenditureTypes.map(e => Object.assign({}, {label: e, value: e }));
+    
+    const queryClient = useQueryClient()
+
     const mutation = useMutation({
         mutationFn: (newReceipt: Object) => {
             return fetch('/api/receipts', {
@@ -85,7 +87,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             date,
             category,
             amount: price,
-            publicKey: accounts.length > 0 ? accounts[0] : '',
+            publicKey: arrayToHex(keyPair.publicKey),
             imageName,
             imageType
         }
@@ -98,11 +100,12 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
                 date: targetReceipt.date,
                 amount: targetReceipt.amount,
                 category: targetReceipt.category,
-                public_key: targetReceipt.publicKey,
-                image_name: targetReceipt.imageName,
-                image_type: targetReceipt.imageType,
+                publicKey: targetReceipt.publicKey,
+                imageName: targetReceipt.imageName,
+                imageType: targetReceipt.imageType,
                 hash,
             })
+            queryClient.invalidateQueries({ queryKey: ['day-receipts'] })
         } catch (err) {
             console.log(err)
             alert(err)

@@ -7,7 +7,7 @@ import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import QrCode from '../components/QrCode';
 import { useHouseManager, Key } from '../context/db';
-import { formatAddress, toHex, decryptReceipts } from '../utils/key';
+import { arrayToHex, formatAddress, toHex, decryptReceipts } from '../utils/key';
 import { s3 } from '../context/filebase';
 
 interface ReceiveProps {
@@ -55,7 +55,7 @@ function Receive({ nonce }: ReceiveProps) {
     return (
         <>
             <div className="col-12 md:col-12">
-                {keyPair && <QrCode keyPair={keyPair} onClickDownload={() => downloadData()} />}
+                {keyPair && <QrCode publicKey={arrayToHex(keyPair.publicKey)} />}
             </div>
         </>
     )
