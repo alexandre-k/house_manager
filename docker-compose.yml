@@ -43,6 +43,7 @@ services:
       - ./infra/nginx/conf.d:/etc/nginx/conf.d
       - ./infra/nginx/certs:/etc/letsencrypt
       - ./backend/public:/srv/public
+      - ../lnprivate-network/temporary_public:/srv/lnprivate_network
         #- ./data/certbot/conf:/etc/letsencrypt
         #- ./data/certbot/www:/var/www/certbot
     ports:
