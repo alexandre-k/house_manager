@@ -48,6 +48,8 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
 
     const upload = useMutation({
         mutationFn: (newImage: File, name: string) => {
+            console.log('New image ', newImage)
+            console.log('Name: ', name)
             const formData = new FormData();
             const dDate = getDate(date)
             formData.append("date", dDate.format("YYYYMMDD"));
