@@ -96,7 +96,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
 
         const hash = arrayToHex(getHash(targetReceipt));
 
-        targetReceipt.imageName = hash + "." + imageName.split('.')[1];
+        targetReceipt.imageName = hash.substring(0, 6) + "." + imageName.split('.')[1];
         try {
 
             mutation.mutate({
