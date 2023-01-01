@@ -50,7 +50,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
         mutationFn: (newImage: File) => {
             const formData = new FormData();
             const dDate = getDate(date)
-            formData.append("date", dDate.format("YYYYMMDD"))
+            formData.append("date", dDate.format("YYYYMMDDHHmmss"))
             formData.append("image", newImage);
             return fetch('/api/upload', {
                 method: "POST",
@@ -91,7 +91,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             category,
             amount: price,
             publicKey: arrayToHex(keyPair.publicKey),
-            imageName: hash + "." + imageName.split('.')[1],
+            imageName: imageName,
             imageType
         }
 
