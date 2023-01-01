@@ -91,7 +91,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             category,
             amount: price,
             publicKey: arrayToHex(keyPair.publicKey),
-            imageName,
+            imageName: hash + "." + imageName.split('.')[1],
             imageType
         }
 
@@ -104,7 +104,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
                 amount: targetReceipt.amount,
                 category: targetReceipt.category,
                 publicKey: targetReceipt.publicKey,
-                imageName: hash,
+                imageName: targetReceipt.imageName,
                 imageType: targetReceipt.imageType,
                 hash,
             })
