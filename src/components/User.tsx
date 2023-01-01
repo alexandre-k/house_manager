@@ -29,8 +29,7 @@ const User = () => {
                     return;
                 }
 
-                const publicKey = toBytes(keyPair.publicKey);
-                navigator.clipboard.writeText(publicKey);
+                navigator.clipboard.writeText(toHex(keyPair.publicKey));
                 if (toast.current === null) return
                 // @ts-ignore
                 toast.current.show({
