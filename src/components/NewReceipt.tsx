@@ -72,7 +72,9 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const onSelect = async (event: any) => {
         const files = Array.from(event.files);
         const image = files[0] as File;
+        console.log(image)
         let name = (Math.random() + 1).toString(36).substring(7) + "." + image.name.split('.')[1];
+        console.log('NAME > ', name)
         upload.mutate(image, name)
         const arrayBuffer = await readFile(image);
         if (!arrayBuffer) {
