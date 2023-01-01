@@ -47,10 +47,11 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     })
 
     const upload = useMutation({
-        mutationFn: (newImage: File) => {
+        mutationFn: (newImage: File, name: string) => {
             const formData = new FormData();
             const dDate = getDate(date)
-            formData.append("date", dDate.format("YYYYMMDD"))
+            formData.append("date", dDate.format("YYYYMMDD"));
+            formData.append("name", name);
             formData.append("image", newImage);
             return fetch('/api/upload', {
                 method: "POST",
@@ -71,14 +72,15 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const onSelect = async (event: any) => {
         const files = Array.from(event.files);
         const image = files[0] as File;
-        upload.mutate(image)
+        let name = (Math.random() + 1).toString(36).substring(7) + "." + image.name.split('.')[1];
+        upload.mutate(image, name)
         const arrayBuffer = await readFile(image);
         if (!arrayBuffer) {
             console.log('Failed reading file ', files[0])
             return;
         }
         // const buffer = new Uint8Array(imageContent);
-        setImageName(image.name);
+        setImageName(name);
         setImageArrayBuffer(arrayBuffer);
         setImageType(image.type);
         setImageSize(image.size);
@@ -90,15 +92,13 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             date,
             category,
             amount: price,
+            imageName: imageName,
             publicKey: arrayToHex(keyPair.publicKey),
             imageType
         }
 
         const hash = arrayToHex(getHash(targetReceipt));
-
-        targetReceipt.imageName = hash.substring(0, 6) + "." + imageName.split('.')[1];
         try {
-
             mutation.mutate({
                 date: targetReceipt.date,
                 amount: targetReceipt.amount,
