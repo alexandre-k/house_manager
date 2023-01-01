@@ -47,7 +47,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     })
 
     const upload = useMutation({
-        mutationFn: (newImage: File, name: string) => {
+        mutationFn: ({ newImage, name }: { newImage: File, name: string }) => {
             console.log('New image ', newImage)
             console.log('Name: ', name)
             const formData = new FormData();
@@ -77,7 +77,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
         console.log(image)
         let name = (Math.random() + 1).toString(36).substring(7) + "." + image.name.split('.')[1];
         console.log('NAME > ', name)
-        upload.mutate(image, name)
+        upload.mutate({ newImage: image, name })
         const arrayBuffer = await readFile(image);
         if (!arrayBuffer) {
             console.log('Failed reading file ', files[0])
