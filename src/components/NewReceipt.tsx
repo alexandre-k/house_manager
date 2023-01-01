@@ -104,7 +104,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
                 amount: targetReceipt.amount,
                 category: targetReceipt.category,
                 publicKey: targetReceipt.publicKey,
-                imageName: targetReceipt.imageName,
+                imageName: hash,
                 imageType: targetReceipt.imageType,
                 hash,
             })
