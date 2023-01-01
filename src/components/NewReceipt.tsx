@@ -48,8 +48,6 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
 
     const upload = useMutation({
         mutationFn: ({ newImage, name }: { newImage: File, name: string }) => {
-            console.log('New image ', newImage)
-            console.log('Name: ', name)
             const formData = new FormData();
             const dDate = getDate(date)
             formData.append("date", dDate.format("YYYYMMDD"));
@@ -74,9 +72,7 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
     const onSelect = async (event: any) => {
         const files = Array.from(event.files);
         const image = files[0] as File;
-        console.log(image)
         let name = (Math.random() + 1).toString(36).substring(7) + "." + image.name.split('.')[1];
-        console.log('NAME > ', name)
         upload.mutate({ newImage: image, name })
         const arrayBuffer = await readFile(image);
         if (!arrayBuffer) {

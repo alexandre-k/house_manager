@@ -139,7 +139,7 @@ func Share(context *gin.Context) {
 
 func UploadImage(context *gin.Context) {
 	image, _ := context.FormFile("image")
-	name, _ := context.FormFile("name")
+	name, _ := context.GetPostForm("name")
 	date, _ := context.GetPostForm("date")
 
 	dst := filepath.Join("public", date + "_" + filepath.Base(name))
