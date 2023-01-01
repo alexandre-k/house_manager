@@ -91,12 +91,12 @@ function NewReceipt({ date, setIsAddingReceipt }: INewReceiptProps) {
             category,
             amount: price,
             publicKey: arrayToHex(keyPair.publicKey),
-            imageName: hash + "." + imageName.split('.')[1],
             imageType
         }
 
         const hash = arrayToHex(getHash(targetReceipt));
-        console.log(targetReceipt)
+
+        targetReceipt.imageName = hash + "." + imageName.split('.')[1],
         try {
 
             mutation.mutate({
