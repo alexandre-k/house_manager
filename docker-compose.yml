@@ -15,7 +15,7 @@ services:
     depends_on:
       - redis
     networks:
-      - reverse_proxy
+      - proxy
 
   frontend:
     hostname: app
@@ -34,7 +34,7 @@ services:
     depends_on:
       - backend
     networks:
-      - reverse_proxy
+      - proxy
 
   gateway:
     image: nginx:alpine
@@ -51,7 +51,7 @@ services:
       - 443:443
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
     networks:
-      - reverse_proxy
+      - proxy
     depends_on:
       - frontend
       - backend
@@ -65,8 +65,8 @@ services:
       - cache:/data
 
 networks:
-  reverse_proxy:
-    driver: bridge
+  proxy:
+    external: true
 
 volumes:
   cache:
