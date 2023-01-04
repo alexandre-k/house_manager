@@ -34,6 +34,7 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
                     const { data } = await res.json()
                     if (!data) return []
                     const found: DisplayedReceipt[] = data.map((r: RawReceipt) => {
+                        console.log('receipt: ', r)
                         return {
                             date: r.date,
                             amount: r.amount,
@@ -82,7 +83,7 @@ function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }
 
 
     const receiptDataUrl = (receipt: DisplayedReceipt) => {
-        if (receipt.imageName != undefined) {
+        if (!!receipt.imageName) {
             return '/public/' + getImagePrefix(getDate(date)) + '_' + receipt.imageName;
         } else {
             return '/images/' + receipt.category + '.jpg';
