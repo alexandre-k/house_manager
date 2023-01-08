@@ -96,8 +96,15 @@ function Dashboard() {
                     width="300px"
                 />
             </div>
-            <div>
-                {accounting.formatMoney(total, { symbol: '¥' })}
+            <div className="flex justify-content-center" style={{ marginTop: "10px", marginBottom: "10px"}}>
+                <div>
+                    Total: {accounting.formatMoney(total, { symbol: '¥' })}
+                </div>
+            </div>
+            <div className="flex justify-content-center">
+                <div>
+                    Half: {accounting.formatMoney(total / 2, { symbol: '¥' })}
+                </div>
             </div>
         </Card>
     );
