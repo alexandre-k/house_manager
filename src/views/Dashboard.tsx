@@ -93,7 +93,7 @@ function Dashboard() {
                         }]
                     }}
                     options={lightOptions}
-                    style={{ position: 'relative', width: '100%' }}
+                    width="300px"
                 />
             </div>
             <div>
