@@ -22,8 +22,8 @@ type Props = {
 function Receipts({ isAddingReceipt, setIsAddingReceipt, receipts, setReceipts }: Props) {
     const { date, keyPair } = useHouseManager();
 
-    const minDate = date;
-    const maxDate = date + 24 * 60 * 60;
+    const minDate = date - 2 * 60 * 60;
+    const maxDate = date + 2 * 60 * 60;
 
     const { isLoading, error, data } = useQuery({
         queryKey: ['dayReceipts'],
