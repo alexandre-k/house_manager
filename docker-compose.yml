@@ -12,8 +12,6 @@ services:
       - 3001:3001
     volumes:
       - ./backend:/app
-    depends_on:
-      - redis
     networks:
       - proxy
 
@@ -35,34 +33,6 @@ services:
       - backend
     networks:
       - proxy
-
-  gateway:
-    image: nginx:alpine
-    # restart: unless-stopped
-    volumes:
-      - ./infra/nginx/conf.d:/etc/nginx/conf.d
-      - ./infra/nginx/certs:/etc/letsencrypt
-      - ./backend/public:/srv/public
-      - ../lnprivate-network/temporary_public:/srv/lnprivate_network
-        #- ./data/certbot/conf:/etc/letsencrypt
-      - ./infra/certbot:/var/www/certbot
-    ports:
-      - 80:80
-      - 443:443
-    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
-    networks:
-      - proxy
-    depends_on:
-      - frontend
-      - backend
-
-  redis:
-    image: redis:6.2-alpine
-    ports:
-      - 6739:6739
-    command: redis-server --save 20 1 --loglevel warning --requirepass TSK5jMmPVU35Gi3FBjyE9J868JutGpzbRrwTa6oemPWW4nX9T2
-    volumes:
-      - cache:/data
 
 networks:
   proxy:
